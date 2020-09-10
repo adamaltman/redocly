@@ -15,8 +15,8 @@ export const theme = {
   colors: {
     // tonalOffset: 0.2,
     primary: {
-      main: "black",
-      buttonColor: "#ffc658",
+      main: "darkblue",
+
       // light: ({ colors }) => lighten(colors.tonalOffset, colors.primary.main),
       // dark: ({ colors }) => darken(colors.tonalOffset, colors.primary.main),
       // contrastText: ({ colors }) => readableColor(colors.primary.main),
@@ -88,7 +88,7 @@ export const theme = {
       contrastText: "black",
     },
     button: {
-      main: "#ffc658",
+      main: "rgb(255, 198, 88);",
     },
     // footer: {
     // main: ({ colors }) => colors.primary.main,
@@ -97,7 +97,7 @@ export const theme = {
   },
 
   sidebar: {
-    backgroundColor: "white",
+    backgroundColor: "transparent",
     width: "260px",
     fontSize: "0.9em",
   },

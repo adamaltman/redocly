@@ -74,6 +74,7 @@ docs:
       - page: docs/sms/zapier.md
   - group: Rest
     pages:
+      - page: docs/sms/sms-guide.md
       - page: docs/sms/helperlibraries/*
       - group: API reference
         pages:

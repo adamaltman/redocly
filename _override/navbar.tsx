@@ -1,12 +1,13 @@
 import * as React from "react";
 import styled from "styled-components";
 
-import { Flex, Link, SearchBox } from "@redocly/ui";
+import { Flex, Link, SearchBox, Box } from "@redocly/ui";
+import { LogoLink } from "@redocly/developer-portal/dist/engine/src/components/UserComponents/navbar.elements";
 
 export default function NavBar(props) {
   const { items, logo, location } = props;
   const isMain = location.pathname !== "/"; // Change the color of the NavBar based on location
-
+  console.log("ismain" + isMain);
   const [isMobileMenuOpened, setMobileMenuOpened] = React.useState(false);
   const toggleMobileMenu = () => setMobileMenuOpened(!isMobileMenuOpened);
   const hideMobileMenu = () => setMobileMenuOpened(false);
@@ -16,23 +17,29 @@ export default function NavBar(props) {
     .map((item, index) => {
       return (
         <NavItem key={index} onClick={hideMobileMenu}>
-          <Link to={item.link} activeClassName="active-link">{item.label}</Link>
+          <Link to={item.link} activeClassName="active-link">
+            {item.label}
+          </Link>
         </NavItem>
       );
     });
-
+  const sbox = !isMain ? (
+    <Box width="83px"></Box>
+  ) : (
+    <SearchBox pathPrefix={props.pathPrefix} />
+  );
   return (
     <NavWrapper hasBackground={isMain}>
       <div className="navbar-content">
         <div className="logo-container">
-          <img src={logo} alt="" height="35" />
+          <a href="/">
+            <img src={logo} alt="" height="35" />
+          </a>
         </div>
         <div className="nav-items-container">
           <NavItems>{navItems}</NavItems>
         </div>
-        <div className="search-container">
-          <SearchBox pathPrefix={props.pathPrefix}  />
-        </div>
+        <div className="search-container">{sbox}</div>
       </div>
       <NavControls>
         <MobileMenuIcon onClick={toggleMobileMenu} />
@@ -54,11 +61,12 @@ const NavWrapper = styled.div<{ hasBackground: boolean }>`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  box-shadow: 0px 20px 20px -20px rgba(20,20,20,0.1);
+  box-shadow: ${({ hasBackground }) =>
+    hasBackground ? "0px 20px 20px -20px rgba(20,20,20,0.1);" : ""};
 
   flex-shrink: 0;
   background: ${({ hasBackground }) =>
-    hasBackground ? "#transparent" : "transparent"};
+    hasBackground ? "transparent" : "#F6F6F7"};
   padding: 20px;
 
   & > .navbar-content {
@@ -80,12 +88,12 @@ const NavItems = styled.ul`
     list-style: none;
     margin-right: 25px;
     & a {
-      color: #333F48;
+      color: #333f48;
       font-weight: 600;
       text-decoration: none;
 
       &.active-link {
-        color: #5C068C;
+        color: #5c068c;
         font-weight: bold;
       }
     }

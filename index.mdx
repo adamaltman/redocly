@@ -21,59 +21,58 @@ import {
 
 import { NavBar } from "@redocly/ui";
 
-import icon1 from "./images/icon1.png";
+import sms from "./images/landing/icon-s-mms.svg";
+import verification from "./images/landing/icon-s-verification.svg";
+import conversation from "./images/landing/icon-s-whatsapp.svg";
+
 import launchFastIcon from "./images/launch-fast.svg";
 import icon3 from "./images/icon3.png";
 import bookManagementIcon from "./images/book-management.svg";
 import foundOrPrivate from "./images/found-or-private.svg";
+import sinchArch from "./images/sinch-arc-developer-page.svg";
 
 export default LandingLayout;
 
-<Jumbotron>
-  <NavBar location={props.location} standalone={false} search={false}  />
+<Jumbotron p="0px" bgColor="#F6F6F7">
+  <NavBar location={props.location} standalone={true} search={false}  />
   <H1>Building blocks to enable rich customer communication</H1>
   <H2>Sinch Developer Documentation</H2>
 
-  <Flex p={20} justifyContent="center">
-    {/* <Button inversed large to="https://app.redoc.ly">
+<Flex p={20} justifyContent="center">
+  {/* <Button inversed large to="https://app.redoc.ly">
       Redocly app
     </Button> */}
-    <Button  large to="developer-portal/index.md">
-      Get started
-    </Button>
-    {/* <Button inversed transparent large>
+  <Button large to="docs/sms/index.md">
+    Get started
+  </Button>
+  {/* <Button inversed transparent large>
       Workflows
     </Button> */}
+</Flex>
+<Flex p={0} justifyContent="center" backgroundColor="white">
+    <img src={sinchArch} alt="" width="100%" />
   </Flex>
 </Jumbotron>
-<Box my={25}>
-  <SectionHeader>
-    Create your <Emphasis> developer portal </Emphasis> today!
-  </SectionHeader>
-  <FlexSection justifyContent="space-around" flexWrap="wrap">
-    <ThinTile to="developer-portal/index.md" icon={icon1} header="Rock">
-      Lorem ipsum dolor sit amet, pri putent oportere quaerendum in, ea mea
-      justo invenire aliquando. Usu modo suavitate ea. Et sed labitur epicurei
-      adipiscing. Nibh zril labitur an usu.Lorem ipsum dolor sit amet, pri
-      putent oportere quaerendum in, ea mea justo invenire aliquando. Usu modo
-      suavitate ea. Et sed labitur epicurei adipiscing. Nibh zril labitur an
-      usu.Lorem ipsum dolor sit amet, pri putent oportere quaerendum in, ea mea
-      justo invenire aliquando. Usu modo suavitate ea. Et sed labitur epicurei
-      adipiscing.
+
+<Box my="-80px" width="100%">
+
+  <FlexSection justifyContent="space-around" flexWrap="nowrap" width="100%">
+    <ThinTile to="docs/sms/index.md" icon={sms} header="SMS">
+      Simple, straight forward SMS API with super low latency and global
+      coverage
     </ThinTile>
     <ThinTile
-      to="developer-portal/index.md"
-      icon={launchFastIcon}
-      header="Paper"
+      to="docs/verification/index.md"
+      icon={verification}
+      header="Verification"
     >
-      Lorem ipsum dolor sit amet, pri putent oportere quaerendum in, ea mea
-      justo invenire aliquando. Usu modo suavitate ea. Et sed labitur epicurei
-      adipiscing. Nibh zril labitur an usu.
+      erify phone numbers with the Sinch Verification SDKs. These are available
+      for iOS, Android and JavaScript. We also offer a Verification REST API
+      that can be combined with the SDKs for full control of the verification
+      process.
     </ThinTile>
-    <ThinTile to="contact.mdx" icon={icon3} header="Scissors">
-      Lorem ipsum dolor sit amet, pri putent oportere quaerendum in, ea mea
-      justo invenire aliquando. Usu modo suavitate ea. Et sed labitur epicurei
-      adipiscing. Nibh zril labitur an usu.
+    <ThinTile to="/docs/conversation/index.md" icon={conversation} header="Conversation">
+      Quickly create omnichannel access from your systems with one simple api. 
     </ThinTile>
   </FlexSection>
   {/* <Jumbotron parallaxEffect bgImage={icon1}>
