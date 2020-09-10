@@ -99,14 +99,14 @@ export const theme = {
   sidebar: {
     backgroundColor: "white",
     width: "260px",
-    fontSize: "0.9em",
+    fontSize: "11px",
   },
   // tocPanel: {
   //   width: '240px',
   // },
 
   typography: {
-    fontSize: "1.2em",
+    fontSize: "14px",
     lineHeight: "1.5em",
     fontWeightRegular: "400",
     fontWeightBold: "600",
