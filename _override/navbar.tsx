@@ -16,26 +16,24 @@ export default function NavBar(props) {
     .map((item, index) => {
       return (
         <NavItem key={index} onClick={hideMobileMenu}>
-          <Link to={item.link}>{item.label}</Link>
+          <Link to={item.link} activeClassName="active-link">{item.label}</Link>
         </NavItem>
       );
     });
 
   return (
     <NavWrapper hasBackground={isMain}>
-      <Flex
-        flexShrink="0"
-        alignSelf="stretch"
-        alignItems="stretch"
-        justifyContent="flex-end"
-        alignContent="stretch"
-      >
-        <img src={logo} alt="" height="50" />
-        <Flex>
+      <div className="navbar-content">
+        <div className="logo-container">
+          <img src={logo} alt="" height="35" />
+        </div>
+        <div className="nav-items-container">
           <NavItems>{navItems}</NavItems>
-          <SearchBox pathPrefix={props.pathPrefix} />
-        </Flex>
-      </Flex>
+        </div>
+        <div className="search-container">
+          <SearchBox pathPrefix={props.pathPrefix}  />
+        </div>
+      </div>
       <NavControls>
         <MobileMenuIcon onClick={toggleMobileMenu} />
       </NavControls>
@@ -54,11 +52,23 @@ const NavItem = styled.li`
 
 const NavWrapper = styled.div<{ hasBackground: boolean }>`
   display: flex;
-  vertical-alignment:middle;
-  
-  flex-shrink=0;
+  flex-direction: row;
+  justify-content: space-between;
+  box-shadow: 0px 20px 20px -20px rgba(20,20,20,0.1);
+
+  flex-shrink: 0;
   background: ${({ hasBackground }) =>
     hasBackground ? "#transparent" : "transparent"};
+  padding: 20px;
+
+  & > .navbar-content {
+    height: 50px;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    justify-content: space-between;
+  }
 `;
 
 const NavItems = styled.ul`
@@ -68,10 +78,16 @@ const NavItems = styled.ul`
 
   & li {
     list-style: none;
-    margin-right: 20px;
+    margin-right: 25px;
     & a {
-      color: black;
+      color: #333F48;
+      font-weight: 600;
       text-decoration: none;
+
+      &.active-link {
+        color: #5C068C;
+        font-weight: bold;
+      }
     }
   }
   display: none;
