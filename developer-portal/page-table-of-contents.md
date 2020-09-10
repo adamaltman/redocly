@@ -1,5 +1,8 @@
-# Page table of contents
+---
+enableToc: false
+---
 
+# Page table of contents
 
 When the `siteConfig.yaml` file has `enableToc: true` then a page table of contents will appear on the right-hand side when there is more than one header.
 
@@ -17,6 +20,7 @@ You can control the title tags, meta keywords and description tags, and more.
 We will use it to enable the table of contents.
 
 Add this snippet to the very top of the page.
+
 ```md
 ---
 enableToc: true
@@ -35,7 +39,6 @@ Could you figure it out?
 
 Great!
 
-
 # Rock
 
 I like rocks.
@@ -47,6 +50,3 @@ I love paper.
 # Scissors
 
 Ugh... I am left-handed.
-
-
-

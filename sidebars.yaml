@@ -8,7 +8,7 @@ training:
       - label: Markdown
         page: developer-portal/markdown.md
       - label: Folder structure
-        page: developer-portal/awesome/folders.md
+        page: developer-portal/awesome/index.md
       - label: Mermaid diagrams
         page: developer-portal/mermaid.md
       - label: Page table of contents
@@ -66,6 +66,43 @@ training:
                             pages:
                               - label: Upgrading
                                 # page: developer-portal/upgrade.md
-alternative:
-  - page: developer-portal/sidebar-alternative.md
-    label: Alternative sidebar example
+docs:
+  - group: Getting started
+    expanded: true
+    pages:
+      - page: docs/sms/index.md
+      - page: docs/sms/zapier.md
+  - group: Rest
+    pages:
+      - page: docs/sms/helperlibraries/*
+      - group: API reference
+        pages:
+          - page: specs/sms.page.yaml/*
+  - page: docs/sms/sinch-campaing-user-guide.md
+  - group: SMPP
+    expanded: false
+    pages:
+      - page: docs/sms/smpp/*
+  - group: Depreciated APIS
+    pages:
+      - page: docs/sms/sms-other/*
+conversation:
+  - page: docs/conversation/index.md
+  - group: Getting started
+    pages:
+      - page: docs/conversation/getting-started/*
+  - page: docs/conversation/conversation-channel-support.md
+  - group: API referemce
+    pages:
+      - page: specs/verification.page.yaml/*
+verification:
+  - page: docs/verification/index.md
+  - group: Rest
+    pages:
+      - page: docs/verification/rest/*
+  - group: Android
+    pages:
+      - page: docs/verification/android/*
+  - group: API referemce
+    pages:
+      - page: specs/verification.page.yaml/*

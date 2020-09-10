@@ -1,4 +1,4 @@
-import { lighten, darken, readableColor } from 'polished';
+import { lighten, darken, readableColor } from "polished";
 
 export const theme = {
   // spacing: {
@@ -15,7 +15,8 @@ export const theme = {
   colors: {
     // tonalOffset: 0.2,
     primary: {
-      main: '#227a88',
+      main: "black",
+      buttonColor: "#ffc658",
       // light: ({ colors }) => lighten(colors.tonalOffset, colors.primary.main),
       // dark: ({ colors }) => darken(colors.tonalOffset, colors.primary.main),
       // contrastText: ({ colors }) => readableColor(colors.primary.main),
@@ -45,7 +46,7 @@ export const theme = {
     //   contrastText: ({ colors }) => readableColor(colors.info.main),
     // },
     text: {
-      primary: '#424242',
+      primary: "#424242",
       // secondary: '#4e566d',
     },
     // border: {
@@ -71,45 +72,49 @@ export const theme = {
     //   },
     // },
     http: {
-      get: '#6bbd5b',
-      post: '#248fb2',
-      put: '#9b708b',
-      options: '#d3ca12',
-      patch: '#e09d43',
-      delete: '#e27a7a',
-      basic: '#999',
-      link: '#31bbb6',
-      head: '#c167e4',
+      get: "#6bbd5b",
+      post: "#248fb2",
+      put: "#9b708b",
+      options: "#d3ca12",
+      patch: "#e09d43",
+      delete: "#e27a7a",
+      basic: "#999",
+      link: "#31bbb6",
+      head: "#c167e4",
     },
-    // navbar: {
-    //   main: ({ colors }) => colors.primary.main,
-    //   gradient: ({ colors }) => darken(colors.tonalOffset / 2, colors.navbar.main),
-    //   contrastText: 'white'
-    // },
+    navbar: {
+      main: ({ colors }) => colors.primary.main,
+      gradient: ({ colors }) => lighten(colors.navbar.main, colors.navbar.main),
+      contrastText: "black",
+    },
+    button: {
+      main: "#ffc658",
+    },
     // footer: {
-      // main: ({ colors }) => colors.primary.main,
-      // contrastText: 'white'
+    // main: ({ colors }) => colors.primary.main,
+    // contrastText: 'white'
     // },
   },
 
   sidebar: {
-    backgroundColor: '#fafafa',
-    width: '260px',
+    backgroundColor: "white",
+    width: "260px",
+    fontSize: "0.9em",
   },
   // tocPanel: {
   //   width: '240px',
   // },
 
   typography: {
-    fontSize: '16px',
-    lineHeight: '1.5em',
-    fontWeightRegular: '400',
-    fontWeightBold: '600',
-    fontWeightLight: '300',
+    fontSize: "1.2em",
+    lineHeight: "1.5em",
+    fontWeightRegular: "400",
+    fontWeightBold: "600",
+    fontWeightLight: "300",
     fontFamily: '"Source Sans Pro", sans-serif',
     headings: {
       fontFamily: '"Source Sans Pro", sans-serif',
-      fontWeight: '600',
+      fontWeight: "600",
     },
     // heading1: {
     //   fontSize: '1.85714em',
@@ -145,11 +150,11 @@ export const theme = {
     // // ...
     // },
     code: {
-      fontSize: '14px',
-      fontFamily: 'Courier, monospace',
+      fontSize: "14px",
+      fontFamily: "Courier, monospace",
       fontWeight: ({ typography }) => typography.fontWeightRegular,
-      color: '#e53935',
-      backgroundColor: 'rgba(38, 50, 56, 0.04)',
+      color: "#e53935",
+      backgroundColor: "rgba(38, 50, 56, 0.04)",
       wrap: false,
     },
     links: {
@@ -159,12 +164,12 @@ export const theme = {
     },
   },
   rightPanel: {
-    backgroundColor: '#263238',
-    width: '40%',
+    backgroundColor: "#263238",
+    width: "40%",
     // textColor: '#ffffff',
   },
   schema: {
-    nestedBackground: '#fafafa',
+    nestedBackground: "#fafafa",
     // linesColor: theme => lighten( theme.colors.tonalOffset, desaturate(theme.colors.tonalOffset, theme.colors.primary.main) ),
     // defaultDetailsWidth: '75%',
     // typeNameColor: theme => theme.colors.text.secondary,
