@@ -86,7 +86,7 @@ export const theme = {
     navbar: {
       main: ({ colors }) => colors.primary.main,
       gradient: ({ colors }) => lighten(colors.navbar.main, colors.navbar.main),
-      contrastText: "#ccc",
+      contrastText: "lightgray",
     },
     button: {
       main: "rgb(255, 198, 88);",
