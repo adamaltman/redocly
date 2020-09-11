@@ -16,7 +16,7 @@ export const theme = {
     // tonalOffset: 0.2,
     primary: {
       main: "darkblue",
-
+      buttonColor: "yellow",
       // light: ({ colors }) => lighten(colors.tonalOffset, colors.primary.main),
       // dark: ({ colors }) => darken(colors.tonalOffset, colors.primary.main),
       // contrastText: ({ colors }) => readableColor(colors.primary.main),
@@ -47,6 +47,7 @@ export const theme = {
     // },
     text: {
       primary: "#424242",
+      contrastText: "black",
       // secondary: '#4e566d',
     },
     // border: {
@@ -85,7 +86,7 @@ export const theme = {
     navbar: {
       main: ({ colors }) => colors.primary.main,
       gradient: ({ colors }) => lighten(colors.navbar.main, colors.navbar.main),
-      contrastText: "black",
+      contrastText: "#ccc",
     },
     button: {
       main: "rgb(255, 198, 88);",
