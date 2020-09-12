@@ -96,17 +96,10 @@ export const theme = {
     // contrastText: 'white'
     // },
   },
-  Button: {
-    color: "#FFC658",
-    backgroundColor: "#FFC658",
-  },
-  button: {
-    color: "darkgreen",
-    backgroundColor: "#FFC658",
-  },
+
   sidebar: {
     backgroundColor: "transparent",
-    width: "25%",
+    width: "260px",
     fontSize: "25px !important",
   },
   // tocPanel: {
