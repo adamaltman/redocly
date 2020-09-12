@@ -30,7 +30,7 @@ const SidebarWrapper = styled.div`
   }
 `;
 
-const sideBarTriggerIcon = require("../../../../images/sidebar.svg");
+/* const sideBarTriggerIcon = require("../../images/sidebar.svg"); */
 const SidebarTrigger = styled.span`
   background-color: red !important;
   width: 55px;
@@ -56,7 +56,7 @@ const SidebarTrigger = styled.span`
     left: 50%;
     width: 25px;
     height: 25px;
-    background: url(${sideBarTriggerIcon});
+    /* background: url(${sideBarTriggerIcon}); */
   }
 
   @media only screen and (min-width: ${({ theme: a }) =>

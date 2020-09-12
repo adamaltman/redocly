@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 import { Flex, Link, SearchBox, Box, Button } from "@redocly/ui";
 import { SinchButton } from "../components/button";
-import { LogoLink } from "@redocly/developer-portal/dist/engine/src/components/UserComponents/navbar.elements";
 
 export default function NavBar(props) {
   const { items, logo, location } = props;
