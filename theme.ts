@@ -16,8 +16,8 @@ export const theme = {
     // tonalOffset: 0.2,
     primary: {
       main: "darkblue",
-      buttonColor: "yellow",
-      // light: ({ colors }) => lighten(colors.tonalOffset, colors.primary.main),
+      cta: "#FFC658",
+      light: "#424242",
       // dark: ({ colors }) => darken(colors.tonalOffset, colors.primary.main),
       // contrastText: ({ colors }) => readableColor(colors.primary.main),
     },
@@ -46,14 +46,14 @@ export const theme = {
     //   contrastText: ({ colors }) => readableColor(colors.info.main),
     // },
     text: {
-      primary: "#424242",
+      primary: "black",
       contrastText: "black",
       // secondary: '#4e566d',
     },
-    // border: {
-    //   dark: 'rgba(0,0,0, 0.15)',
-    //   light: '#ffffff',
-    // },
+    border: {
+      dark: "rgba(0,0,0, 0.15)",
+      light: "#ffffff",
+    },
     // responses: {
     //   success: {
     //     color: ({ colors }) => colors.success.main,
@@ -96,18 +96,25 @@ export const theme = {
     // contrastText: 'white'
     // },
   },
-
+  Button: {
+    color: "#FFC658",
+    backgroundColor: "#FFC658",
+  },
+  button: {
+    color: "darkgreen",
+    backgroundColor: "#FFC658",
+  },
   sidebar: {
     backgroundColor: "transparent",
-    width: "260px",
-    fontSize: "0.9em",
+    width: "25%",
+    fontSize: "25px !important",
   },
   // tocPanel: {
   //   width: '240px',
   // },
 
   typography: {
-    fontSize: "1.0em",
+    fontSize: "14px",
     lineHeight: "1.5em",
     fontWeightRegular: "400",
     fontWeightBold: "600",
@@ -166,8 +173,9 @@ export const theme = {
   },
   rightPanel: {
     backgroundColor: "#263238",
-    width: "40%",
-    // textColor: '#ffffff',
+    width: "25%",
+    textColor: "purple",
+    fontSize: "2em !important",
   },
   schema: {
     nestedBackground: "#fafafa",

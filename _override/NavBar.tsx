@@ -1,8 +1,8 @@
 import * as React from "react";
 import styled from "styled-components";
 
-import { Flex, Link, SearchBox, Box } from "@redocly/ui";
-
+import { Flex, Link, SearchBox, Box, Button } from "@redocly/ui";
+import { SinchButton } from "../components/button";
 import { LogoLink } from "@redocly/developer-portal/dist/engine/src/components/UserComponents/navbar.elements";
 
 export default function NavBar(props) {
@@ -40,7 +40,14 @@ export default function NavBar(props) {
         <div className="nav-items-container">
           <NavItems>{navItems}</NavItems>
         </div>
-        <div className="search-container">{sbox}</div>
+        <div className="search-container">
+          <Flex flexWrap="nowrap">
+            {sbox}
+            <Box ml="10px">
+              <SinchButton href="https://sinch.com/signup">Sign up</SinchButton>
+            </Box>
+          </Flex>
+        </div>
       </div>
       <NavControls>
         <MobileMenuIcon onClick={toggleMobileMenu} />
