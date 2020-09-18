@@ -1,0 +1,2679 @@
+openapi: 3.0.0
+info:
+  description: "# Sending Messages\n\nTo start sending messages you need to have a Conversation API [**app**](https://dashboard.sinch.com/convapi/apps).\nThe app holds information about the channel credentials and registered webhooks\nto which the API delivers callbacks such as message delivery reports and contact messages.\nIf you don't already have an app please follow the instructions in the getting started\nguide available in the [Sinch Portal](https://dashboard.sinch.com/convapi/getting-started)\nto create one. Each app is associated with a project. Conversation API authenticates\nrequests using project level OAuth2 access tokens. To obtain an access token\ncall the token service at <https://auth.sinch.com/oauth2/token> with the key ID and\nthe key secret which you create in the [Access Keys](https://dashboard.sinch.com/convapi/access-keys)\npage in the Sinch Portal:\n\n```console\ncurl https://auth.sinch.com/oauth2/token -d grant_type=client_credentials --user <key_id>:<key_secret>\n```\n\nThe examples that follow assume the token returned by the above call is `CONV-APP-TOKEN`,\nthe Sinch Project ID is `SINCH-PROJECT-ID` and the Conversation API **app** ID is `CONV-APP-ID`.\nYou would need to change these when sending messages using your project and app identities.\n\nThe endpoint for sending messages is:\n> https://eu.conversation.api.sinch.com/v1beta/projects/SINCH-PROJECT-ID/messages:send\n\n\nThere are two different ways to specify the recipient of the message when calling the\n`send message` endpoint:\n\n## Using Contact ID Recipient\n\nIn order to send messages using a reference to a contact the contact needs to be created first.\nThis is done by making a POST request to the `create contact` endpoint using Bearer authentication with\n`CONV-APP-TOKEN` as access token. For example the below body\n creates a contact with its SMS channel identity being a Swedish telephone number:  \n\n```json\n{\n    \"channel_identities\": [\n        {\n            \"channel\": \"SMS\",\n            \"identity\": \"+46 xxx xxx xxx\"\n        }\n    ]\n}\n```\n\nThe `create contact` endpoint response contains the contact ID among auxiliary information\nabout the created contact:\n\n```json\n{\n    \"id\": \"01E4R9F5QWX1KR05YF31N4161J\",\n    ...\n}\n```\n\nAssuming the `CONV-APP-ID` app has been configured with Sinch SMS channel integration sending a\nmessage to the above contact consists of making a POST request to the `send message` endpoint using Bearer authentication with\n`CONV-APP-TOKEN` as access token and the following body:\n\n```json\n{\n    \"app_id\": \"CONV-APP-ID\",\n    \"recipient\": {\n    \t\"contact_id\": \"01E4R9F5QWX1KR05YF31N4161J\"\n    },\n    \"message\": {\n        \"text_message\": {\n            \"text\": \"Text message from Sinch Conversation API.\"\n        }\n    }\n}\n```\n\nA successful 200 response from the API indicated the message was successfully queued\nfor delivery. The response body contain message id which will be used\nin subsequent delivery receipts:\n\n```json\n{\n    \"message_id\": \"01E4RAQSMVQY2M11G26SAE1ZM3\",\n    \"accepted_time\": \"2020-03-31T12:58:24.283289Z\"\n}\n```\n \n## Using Channel Recipient Identities to Identify the Recipient\n\nIt is possible to send messages without creating the contact first.\nFor example, the same message as before can be dispatched by\nchanging the body to the `send message` request to:\n\n```json\n{\n    \"app_id\": \"CONV-APP-ID\",\n    \"recipient\": {\n    \t\"identified_by\": {\n    \t\t\"channel_identities\":\t[{\n    \t\t\"channel\": \"SMS\",\n    \t\t\"identity\": \"+46 xxx xxx xxx\"\n    \t}]}\n    },\n    \"message\": {\n        \"text_message\": {\n            \"text\": \"Text message from Sinch Conversation API.\"\n        }\n    }\n}\n```\n\nIn this case the contact will be created automatically with the\ngiven channel identity while the message is processed by the\nConversation API. The contact ID can then be retrieved from the\nconversation reference returned by the message delivery report.   \n"
+  title: Conversation API
+  version: b1fbfef0
+  contact:
+    name: Sinch
+    email: support@sinch.com
+  license:
+    name: MIT
+    url: https://sinch.com
+paths:
+  /callback:
+    post:
+      tags:
+        - Callback
+      summary: Sends a callback to a registered webhook
+      operationId: Callback_SendCallback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/v1betaSendCallbackRequest"
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema: {}
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/apps":
+    get:
+      tags:
+        - App
+      summary: List all apps for a given project
+      operationId: App_ListApps
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaListAppsResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    post:
+      tags:
+        - App
+      summary: Creates an app
+      operationId: App_CreateApp
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeApp"
+        description: Required. The app to create.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeApp"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/apps/{app_id}":
+    patch:
+      tags:
+        - App
+      summary: Update an app
+      operationId: App_UpdateApp
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the app.
+          name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: The set of field mask paths.
+          name: update_mask.paths
+          in: query
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeApp"
+        description: Required. The updated app.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeApp"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    get:
+      tags:
+        - App
+      summary: Get an app
+      operationId: App_GetApp
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the app to fetch.
+          name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeApp"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    delete:
+      tags:
+        - App
+      summary: Delete an app
+      operationId: App_DeleteApp
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the app.
+          name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema: {}
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/apps/{app_id}/webhooks":
+    get:
+      tags:
+        - Webhooks
+      summary: List all webhooks for a given app
+      operationId: Webhooks_ListWebhooks
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the App to list webhooks for.
+          name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaListWebhooksResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/capability:query":
+    post:
+      description: |-
+        This method is asynchronous - it returns immediately the
+        requested Capability registration.
+        Capability check are then delivered as callbacks
+        to registered webhooks with trigger CAPABILITY for every reachable channel.
+      tags:
+        - Capability
+      summary: Request a capability lookup. The outcome will be reported asynchronously.
+      operationId: Capability_QueryCapability
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/v1betaQueryCapabilityRequest"
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaQueryCapabilityResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/contacts":
+    get:
+      tags:
+        - Contact
+      summary: Get contacts
+      operationId: Contact_ListContacts
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Optional. Maximum number of contacts to fetch. Defaults to 10.
+          name: page_size
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - description: Optional. Next page token previously returned if any.
+          name: page_token
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaListContactsResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    post:
+      tags:
+        - Contact
+      summary: Create a Contact
+      operationId: Contact_CreateContact
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeContact"
+        description: Required. The contact to be added.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeContact"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/contacts/{contact_id}":
+    patch:
+      tags:
+        - Contact
+      summary: Update a Contact
+      operationId: Contact_UpdateContact
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: The ID of the contact.
+          name: contact_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: The set of field mask paths.
+          name: update_mask.paths
+          in: query
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeContact"
+        description: Required. The updated contact.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeContact"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    get:
+      tags:
+        - Contact
+      summary: Get a Contact
+      operationId: Contact_GetContact
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the contact.
+          name: contact_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeContact"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    delete:
+      tags:
+        - Contact
+      summary: Delete a Contact
+      operationId: Contact_DeleteContact
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the contact to be deleted.
+          name: contact_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema: {}
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/contacts/{destination_id}:merge":
+    post:
+      description: |-
+        The remaining contact will contain all conversations that the removed
+        contact did. If both contacts had conversations within the same App,
+        messages from the removed contact will be merged into corresponding active
+        conversations in the destination contact. Channel
+        identities will be moved from the source contact to the destination contact
+        only for channels that weren't present there before. Moved channel
+        identities will be placed at the bottom of the channel priority list.
+        Optional fields from the source contact will be copied only if
+        corresponding fields in the destination contact are empty The contact being
+        removed cannot be referenced after this call.
+      tags:
+        - Contact
+      summary: Merge two contacts
+      operationId: Contact_MergeContact
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the contact that should be kept.
+          name: destination_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/v1betaMergeContactRequest"
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeContact"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/conversations":
+    get:
+      description: This operation lists all conversations that are associated with an app and/or a contact.
+      tags:
+        - Conversation
+      summary: List conversations
+      operationId: Conversation_ListConversations
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: |-
+            Optional. The ID of the app involved in the conversations.
+            At least one of app_id and contact_id needs to be present.
+          name: app_id
+          in: query
+          schema:
+            type: string
+        - description: |-
+            Optional. The ID of the contact involved in the conversations.
+            At least one of app_id and contact_id needs to be present.
+          name: contact_id
+          in: query
+          schema:
+            type: string
+        - description: Required. True if only active conversations should be listed.
+          name: only_active
+          in: query
+          schema:
+            type: boolean
+        - description: Optional. Maximum number of conversations to fetch. Defaults to 10.
+          name: page_size
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - description: Optional. Next page token previously returned if any.
+          name: page_token
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaListConversationsResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    post:
+      description: |-
+        Creates a new empty conversation.
+        It is not needed in the normal message flow as sending a message with SendMessage
+        endpoint automatically creates a new conversation.
+        Similarly receiving a message on one of the registered channels for an app
+        also creates a new conversation.
+        Creating empty conversation is useful if the first message in a conversation with a contact
+        comes out-of-band and needs to be injected with InjectMessage endpoint.
+      tags:
+        - Conversation
+      summary: Creates a conversation
+      operationId: Conversation_CreateConversation
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeConversation"
+        description: |-
+          Required. The conversation to create. ID will be generated for the conversation
+          and any ID in the given conversation will be ignored.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeConversation"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/conversations/{conversation_id}":
+    patch:
+      description: |-
+        This operation updates a conversation which can, for instance, be used to
+        update the metadata associated with a conversation.
+      tags:
+        - Conversation
+      summary: Update a conversation
+      operationId: Conversation_UpdateConversation
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: The ID of the conversation.
+          name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: The set of field mask paths.
+          name: update_mask.paths
+          in: query
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeConversation"
+        description: Required. The updated conversation.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeConversation"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    get:
+      description: |-
+        Retrieves a conversation by id. A conversation has two participating
+        entities, an app and a contact.
+      tags:
+        - Conversation
+      summary: Get a conversation
+      operationId: Conversation_GetConversation
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the conversation.
+          name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeConversation"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/conversations/{conversation_id}:stop":
+    post:
+      description: |-
+        This operation stops the referenced conversation, if the conversation is still active.
+        A new conversation will be created if a new message is exchanged between the app or contact
+        that was part of the stopped conversation.
+      tags:
+        - Conversation
+      summary: Stop conversation
+      operationId: Conversation_StopActiveConversation
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the conversation to be stopped.
+          name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema: {}
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  ? "/v1beta/projects/{project_id}/conversations/{conversation_id}:inject-message"
+  : post:
+      description: This operation injects a conversation message in to a specific conversation.
+      tags:
+        - Conversation
+      summary: Inject messages
+      operationId: Conversation_InjectMessage
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the conversation.
+          name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeConversationMessage"
+        description: Message to be injected. Id field of the message is ignored and instead generated on the server.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema: {}
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/events:send":
+    post:
+      description: |-
+        Sends an event to the referenced contact from the referenced app.
+        Note that this operation enqueues the event in a queues so a successful
+        response only indicates that the event has been queued.
+      tags:
+        - Events
+      summary: Send an event
+      operationId: Events_SendEvent
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/v1betaSendEventRequest"
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaSendEventResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/messages":
+    get:
+      description: |-
+        This operation lists all messages associated with a conversation or a contact.
+        The messages are ordered by their accept_time property in descending order,
+        where accept_time is a timestamp of when the message was enqueued by the Conversation API.
+        This means messages received most recently will be listed first.
+      tags:
+        - Conversation
+      summary: List messages
+      operationId: Conversation_ListMessages
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: |-
+            Optional. Resource name (id) of the conversation.
+            One of conversation_id or contact_id needs to be present.
+          name: conversation_id
+          in: query
+          schema:
+            type: string
+        - description: |-
+            Optional. Resource name (id) of the contact.
+            One of conversation_id or contact_id needs to be present.
+          name: contact_id
+          in: query
+          schema:
+            type: string
+        - description: Optional. Maximum number of messages to fetch. Defaults to 10.
+          name: page_size
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - description: Optional. Next page token previously returned if any.
+          name: page_token
+          in: query
+          schema:
+            type: string
+        - name: view
+          in: query
+          schema:
+            type: string
+            enum:
+              - WITH_METADATA
+              - WITHOUT_METADATA
+            default: WITH_METADATA
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaListMessagesResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/messages/{message_id}":
+    get:
+      description: Retrieves a message by id.
+      tags:
+        - Messages
+      summary: Get a message
+      operationId: Messages_GetMessage
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The conversation message ID.
+          name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeConversationMessage"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/messages:send":
+    post:
+      description: |-
+        Sends a message to the referenced contact from the referenced app.
+        Note that this operation enqueues the message in a queues so a successful
+        response only indicates that the message has been queued.
+        The message is added to the active conversation with the contact if such conversation exists.
+        If no active conversation exists a new one is started automatically.
+      tags:
+        - Messages
+      summary: Send a message
+      operationId: Messages_SendMessage
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/v1betaSendMessageRequest"
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaSendMessageResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/messages:transcode":
+    post:
+      description: |-
+        Transcodes the message from the Conversation API format to the
+        channel-specific formats for the requested channels. No message
+        is sent to the contact.
+      tags:
+        - Transcoding
+      summary: Transcode a message
+      operationId: Transcoding_TranscodeMessage
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/v1betaTranscodeMessageRequest"
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaTranscodeMessageResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/optins:register":
+    post:
+      description: |-
+        This method is asynchronous - it returns immediately the
+        requested OptIn registration with any defaults resolved.
+        All changes of the actual opt-in status are then delivered as callbacks
+        to registered webhooks with trigger OPT_IN.
+      tags:
+        - OptInOut
+      summary: Register an opt-in
+      operationId: OptInOut_RegisterOptIn
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeOptIn"
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeOptIn"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/optouts:register":
+    post:
+      description: |-
+        This method is asynchronous - it returns immediately the
+        requested OptOut registration with any defaults resolved.
+        All changes of the actual opt-out status are then delivered as callbacks
+        to registered webhooks with trigger OPT_OUT.
+      tags:
+        - OptInOut
+      summary: Register an opt-out
+      operationId: OptInOut_RegisterOptOut
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeOptOut"
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeOptOut"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/templates":
+    get:
+      tags:
+        - Templates
+      summary: List all templates belonging to a project ID.
+      operationId: Templates_ListTemplates
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/v1betaListTemplatesResponse"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    post:
+      tags:
+        - Templates
+      summary: Creates a template
+      operationId: Templates_CreateTemplate
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeTemplate"
+        description: Required. The template to create.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeTemplate"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/templates/{template_id}":
+    patch:
+      tags:
+        - Templates
+      summary: Updates a template.
+      operationId: Templates_UpdateTemplate
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: |-
+            The id of the template. Specify this yourself during creation
+            otherwise we will generate an ID for you. This has to be unique
+            for a given project.
+          name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: The set of field mask paths.
+          name: update_mask.paths
+          in: query
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeTemplate"
+        description: Required. The updated template.
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeTemplate"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+
+    get:
+      tags:
+        - Templates
+      summary: Get a template
+      operationId: Templates_GetTemplate
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the template to fetch.
+          name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeTemplate"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    delete:
+      tags:
+        - Templates
+      summary: Delete a template.
+      operationId: Templates_DeleteTemplate
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the template to fetch.
+          name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema: {}
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/webhooks":
+    post:
+      tags:
+        - Webhooks
+      summary: Create a new webhook
+      operationId: Webhooks_CreateWebhook
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeWebhook"
+        description: Required. The Webhook to create
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeWebhook"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+  "/v1beta/projects/{project_id}/webhooks/{webhook_id}":
+    patch:
+      tags:
+        - Webhooks
+      summary: Update an existing webhook
+      operationId: Webhooks_UpdateWebhook
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: The ID of the webhook.
+          name: webhook_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: The set of field mask paths.
+          name: update_mask.paths
+          in: query
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/typeWebhook"
+        description: Required. The Webhook to update
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeWebhook"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    get:
+      tags:
+        - Webhooks
+      summary: Get a webhook
+      operationId: Webhooks_GetWebhook
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the webhook to fetch.
+          name: webhook_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/typeWebhook"
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+    delete:
+      tags:
+        - Webhooks
+      summary: Delete an existing webhook
+      operationId: Webhooks_DeleteWebhook
+      parameters:
+        - description: Required. The project ID.
+          name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - description: Required. The ID of the webhook to delete.
+          name: webhook_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema: {}
+        default:
+          description: An unexpected error response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/runtimeError"
+tags:
+  - description: Endpoint for sending messages
+    name: Messages
+  - description: Endpoints for managing Conversation API apps
+    name: App
+  - description: Endpoints for managing contacts
+    name: Contact
+  - description: Endpoints for working with the conversation log
+    name: Conversation
+  - description: Endpoint for sending events
+    name: Events
+  - description: Endpoint for transcoding generic message format to channel-specific one
+    name: Transcoding
+  - description: Endpoints for managing message templates
+    name: Templates
+  - description: Format of callbacks sent from the Conversation API
+    name: Callback
+x-explorer-enabled: false
+x-samples-languages:
+  - curl
+  - java
+  - csharp
+  - node
+  - php
+servers:
+  - url: "https://eu.conversation.api.sinch.com"
+components:
+  schemas:
+    protobufAny:
+      type: object
+      properties:
+        type_url:
+          type: string
+        value:
+          type: string
+          format: byte
+    runtimeError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        details:
+          type: array
+          items:
+            $ref: "#/components/schemas/protobufAny"
+        error:
+          type: string
+        message:
+          type: string
+    typeApp:
+      description: |-
+        The app corresponds to the API user and is a collection of channel credentials
+        allowing access to the underlying messaging channels.
+        The app is tied to a set of webhooks which define the destination for various events coming from the Conversation API.
+      type: object
+      title: Conversation API app
+      properties:
+        channel_credentials:
+          description: |-
+            Channel credentials.
+            The order of the credentials defines the
+            app channel priority.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversationChannelCredential"
+        conversation_metadata_report_view:
+          $ref: "#/components/schemas/typeConversationMetadataReportView"
+        display_name:
+          description: Human readable identifier of the app. E.g. Sinch Conversation API Demo App 001.
+          type: string
+        id:
+          description: Required. The ID of the app.
+          type: string
+        rate_limits:
+          $ref: "#/components/schemas/typeRateLimits"
+    typeAppEvent:
+      type: object
+      title: Message originating from an app
+      properties:
+        composing_event:
+          $ref: "#/components/schemas/typeComposingEvent"
+    typeAppMessage:
+      type: object
+      title: Message originating from an app
+      properties:
+        card_message:
+          $ref: "#/components/schemas/typeCardMessage"
+        carousel_message:
+          $ref: "#/components/schemas/typeCarouselMessage"
+        choice_message:
+          $ref: "#/components/schemas/typeChoiceMessage"
+        explicit_channel_message:
+          description: |-
+            Optional. Channel specific messages, overriding any transcoding.
+            The key in the map must point to a valid conversation channel as
+            defined by the enum ConversationChannel.
+          type: object
+          additionalProperties:
+            type: string
+        location_message:
+          $ref: "#/components/schemas/typeLocationMessage"
+        media_message:
+          $ref: "#/components/schemas/typeMediaMessage"
+        template_message:
+          $ref: "#/components/schemas/typeTemplateMessage"
+        text_message:
+          $ref: "#/components/schemas/typeTextMessage"
+    typeCallMessage:
+      description: Message for triggering a call.
+      type: object
+      title: Call Message
+      properties:
+        phone_number:
+          description: Required. Phone number in E.164 with leading +.
+          type: string
+        title:
+          description: |-
+            Required. Title shown close to the phone number.
+            The title is clickable in some cases.
+          type: string
+    typeCapabilityNotification:
+      description: Represents an explicit Capability result for specific channel.
+      type: object
+      properties:
+        capability_status:
+          $ref: "#/components/schemas/typeCapabilityStatus"
+        channel:
+          $ref: "#/components/schemas/typeConversationChannel"
+        channel_capabilities:
+          description: Optional. List of channel-specific capabilities reported by the channel.
+          type: array
+          items:
+            type: string
+        contact_id:
+          description: Optional. The contact for the channel identities.
+          type: string
+        identity:
+          description: "Optional. The channel identity e.g., a phone number for SMS, WhatsApp and Viber Business."
+          type: string
+        reason:
+          $ref: "#/components/schemas/typeReason"
+    typeCapabilityStatus:
+      description: |2-
+         - CAPABILITY_UNKNOWN: The channel capability for the identity is unknown.
+         - CAPABILITY_FULL: The specified identity supports all the features of the channel.
+         - CAPABILITY_PARTIAL: The specified identity supports a subset of the channel features.
+         - NO_CAPABILITY: The specified identity has no capability on the channel.
+      type: string
+      default: CAPABILITY_UNKNOWN
+      enum:
+        - CAPABILITY_UNKNOWN
+        - CAPABILITY_FULL
+        - CAPABILITY_PARTIAL
+        - NO_CAPABILITY
+    typeCardMessage:
+      description: "Message containing text, media and choices."
+      type: object
+      title: Card Message
+      properties:
+        choices:
+          description: |-
+            Optional. Messenger supports up to 3 choices for Card messages
+            which are part of a CarouselMessage. The Conversation API will truncate
+            the choices to the first 3 when sending CarouselMessages to Messenger.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeChoice"
+        description:
+          description: Optional.
+          type: string
+        media_message:
+          $ref: "#/components/schemas/typeMediaMessage"
+        title:
+          description: Required.
+          type: string
+    typeCarouselMessage:
+      description: |-
+        Message containing a list of cards often
+        rendered horizontally on supported channels.
+      type: object
+      title: Carousel Message
+      properties:
+        cards:
+          description: Required. A list of 2..10 cards.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeCardMessage"
+        choices:
+          description: Optional. Outer choices on the carousel level.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeChoice"
+    typeChannel:
+      type: string
+      default: UNSPECIFIED
+      enum:
+        - UNSPECIFIED
+        - CONVERSATION
+        - MESSENGER
+        - WHATSAPP
+        - RCS
+        - SMS
+        - VIBER
+        - VIBERBM
+    typeChannelIdentities:
+      type: object
+      properties:
+        channel_identities:
+          description: |-
+            A list of specific channel identities.
+            The API will use these identities when sending to specific channels.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeChannelRecipientIdentity"
+    typeChannelIdentity:
+      description: |-
+        A unique identity of message recipient on a particular channel.
+        For example, the channel identity on SMS, WHATSAPP or VIBERBM is a MSISDN phone number.
+      type: object
+      title: Channel Identity
+      properties:
+        app_id:
+          description: |-
+            Optional. The Conversation API's app ID if this is app-scoped channel identity.
+            Currently, FB Messenger and Viber are using app-scoped channel identities
+            which means contacts will have different channel identities for different
+            apps. FB Messenger uses PSIDs (Page-Scoped IDs) as channel identities.
+            The app_id is pointing to the app linked to the FB page for which this PSID is issued.
+          type: string
+        channel:
+          $ref: "#/components/schemas/typeConversationChannel"
+        identity:
+          description: "Required. The channel identity e.g., a phone number for SMS, WhatsApp and Viber Business."
+          type: string
+    typeChannelRecipientIdentity:
+      type: object
+      properties:
+        channel:
+          $ref: "#/components/schemas/typeConversationChannel"
+        identity:
+          description: Required. The channel recipient identity.
+          type: string
+    typeChoice:
+      description: |-
+        A choice is an action the user can take such as
+        buttons for quick replies, call actions etc.
+      type: object
+      title: Choice/Action
+      properties:
+        call_message:
+          $ref: "#/components/schemas/typeCallMessage"
+        location_message:
+          $ref: "#/components/schemas/typeLocationMessage"
+        postback_data:
+          description: |-
+            Optional. This data will be returned in the ChoiceResponseMessage.
+            The default is message_id_{text, title}.
+          type: string
+        text_message:
+          $ref: "#/components/schemas/typeTextMessage"
+        url_message:
+          $ref: "#/components/schemas/typeUrlMessage"
+    typeChoiceMessage:
+      description: Message containing choices/actions.
+      type: object
+      title: Choice Message
+      properties:
+        choices:
+          description: Required.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeChoice"
+        text_message:
+          $ref: "#/components/schemas/typeTextMessage"
+    typeChoiceResponseMessage:
+      description: Represents a response to a choice message.
+      type: object
+      title: Choice Response Message
+      properties:
+        message_id:
+          description: Required. The message id containing the choice.
+          type: string
+        postback_data:
+          description: Required. The postback_data defined in the selected choice.
+          type: string
+    typeComposingEvent:
+      type: object
+    typeContact:
+      description: |-
+        A participant in a conversation typically representing a person.
+        It is associated with a collection of channel identities.
+      type: object
+      title: Contact
+      properties:
+        channel_identities:
+          description: List of channel identities.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeChannelIdentity"
+        channel_priority:
+          description: List of channels defining the channel priority.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversationChannel"
+        display_name:
+          type: string
+          title: Optional. The display name. A default 'Unknown' will be assigned if left empty
+        email:
+          description: Optional. Email of the contact.
+          type: string
+        external_id:
+          description: Optional. Contact identifier in an external system.
+          type: string
+        id:
+          description: The ID of the contact.
+          type: string
+        metadata:
+          description: |-
+            Optional. Metadata associated with the contact.
+            Up to 1024 characters long.
+          type: string
+    typeContactCreateNotification:
+      type: object
+      properties:
+        contact:
+          $ref: "#/components/schemas/typeContact"
+    typeContactDeleteNotification:
+      type: object
+      properties:
+        contact:
+          $ref: "#/components/schemas/typeContact"
+    typeContactEvent:
+      type: object
+      title: Message originating from a contact
+      properties:
+        composing_event:
+          $ref: "#/components/schemas/typeComposingEvent"
+    typeContactMergeNotification:
+      type: object
+      properties:
+        deleted_contact:
+          $ref: "#/components/schemas/typeContact"
+        preserved_contact:
+          $ref: "#/components/schemas/typeContact"
+    typeContactMessage:
+      type: object
+      title: Message originating from a contact
+      properties:
+        choice_response_message:
+          $ref: "#/components/schemas/typeChoiceResponseMessage"
+        location_message:
+          $ref: "#/components/schemas/typeLocationMessage"
+        media_message:
+          $ref: "#/components/schemas/typeMediaMessage"
+        text_message:
+          $ref: "#/components/schemas/typeTextMessage"
+    typeConversation:
+      description: |-
+        A collection of messages exchanged between a contact and an app.
+        Conversations are normally created on the fly by Conversation API once
+        a message is sent and there is no active conversation already.
+        There can be only one active conversation at any given time between
+        a particular contact and an app.
+      type: object
+      title: Conversation
+      properties:
+        active:
+          description: Flag for whether this conversation is active.
+          type: boolean
+        active_channel:
+          $ref: "#/components/schemas/typeConversationChannel"
+        app_id:
+          description: The ID of the participating app.
+          type: string
+        contact_id:
+          description: The ID of the participating contact.
+          type: string
+        id:
+          description: The ID of the conversation.
+          type: string
+        last_received:
+          description: |-
+            Output only. The timestamp of the latest message in the conversation. The timestamp will be
+            Thursday January 01, 1970 00:00:00 UTC if the conversation contains no messages.
+          type: string
+          format: date-time
+          readOnly: true
+        metadata:
+          description: |-
+            An arbitrary data set by the Conversation API clients.
+            Up to 1024 characters long.
+          type: string
+    typeConversationChannel:
+      type: string
+      title: Channel Identifier
+      default: CHANNEL_UNSPECIFIED
+      enum:
+        - CHANNEL_UNSPECIFIED
+        - WHATSAPP
+        - RCS
+        - SMS
+        - MESSENGER
+        - VIBER
+        - VIBERBM
+    typeConversationChannelCredential:
+      description: Enables access to the underlying messaging channel.
+      type: object
+      title: Channel Credential
+      properties:
+        channel:
+          $ref: "#/components/schemas/typeConversationChannel"
+        static_bearer:
+          $ref: "#/components/schemas/typeStaticBearerCredential"
+        static_token:
+          $ref: "#/components/schemas/typeStaticTokenCredential"
+    typeConversationDirection:
+      type: string
+      default: UNDEFINED_DIRECTION
+      enum:
+        - UNDEFINED_DIRECTION
+        - TO_APP
+        - TO_CONTACT
+    typeConversationEvent:
+      description: An event on a particular channel.
+      type: object
+      title: Conversation Event
+      properties:
+        accept_time:
+          description: Output only.
+          type: string
+          format: date-time
+          readOnly: true
+        app_event:
+          $ref: "#/components/schemas/typeAppEvent"
+        channel_identity:
+          $ref: "#/components/schemas/typeChannelIdentity"
+        contact_event:
+          $ref: "#/components/schemas/typeContactEvent"
+        contact_id:
+          description: Required. The ID of the contact.
+          type: string
+        direction:
+          $ref: "#/components/schemas/typeConversationDirection"
+    typeConversationMergeStrategy:
+      type: string
+      default: MERGE
+      enum:
+        - MERGE
+    typeConversationMessage:
+      description: A message on a particular channel.
+      type: object
+      title: Conversation Message
+      properties:
+        accept_time:
+          description: Output only.
+          type: string
+          format: date-time
+          readOnly: true
+        app_message:
+          $ref: "#/components/schemas/typeAppMessage"
+        channel_identity:
+          $ref: "#/components/schemas/typeChannelIdentity"
+        contact_id:
+          description: Required. The ID of the contact.
+          type: string
+        contact_message:
+          $ref: "#/components/schemas/typeContactMessage"
+        conversation_id:
+          description: Required. The ID of the conversation.
+          type: string
+        direction:
+          $ref: "#/components/schemas/typeConversationDirection"
+        id:
+          description: Required. The ID of the message.
+          type: string
+        metadata:
+          description: |-
+            Optional. Metadata associated with the contact.
+            Up to 1024 characters long.
+          type: string
+    typeConversationMetadataReportView:
+      type: string
+      default: NONE
+      enum:
+        - NONE
+        - FULL
+    typeConversationStartNotification:
+      type: object
+      properties:
+        conversation:
+          $ref: "#/components/schemas/typeConversation"
+    typeConversationStopNotification:
+      type: object
+      properties:
+        conversation:
+          $ref: "#/components/schemas/typeConversation"
+    typeCoordinates:
+      type: object
+      title: Geographic coordinates
+      properties:
+        latitude:
+          description: Required. The latitude.
+          type: number
+          format: float
+        longitude:
+          description: Required. The longitude.
+          type: number
+          format: float
+    typeEventDeliveryReport:
+      description: A delivery receipt for event sent from an app.
+      type: object
+      title: Event Delivery Report
+      properties:
+        channel_identity:
+          $ref: "#/components/schemas/typeChannelIdentity"
+        contact_id:
+          description: Required. The ID of the contact.
+          type: string
+        event_id:
+          description: Required. The ID of the event.
+          type: string
+        metadata:
+          description: Optional. Eventual metadata specified when sending the message.
+          type: string
+        reason:
+          $ref: "#/components/schemas/typeReason"
+        status:
+          $ref: "#/components/schemas/typeStatus"
+    typeLocationMessage:
+      type: object
+      title: Message with geo location
+      properties:
+        coordinates:
+          $ref: "#/components/schemas/typeCoordinates"
+        label:
+          description: Optional. Label or name for the position.
+          type: string
+        title:
+          description: |-
+            Required. The title is shown close to the
+            button or link that leads to a map showing the location.
+            The title is clickable in some cases.
+          type: string
+    typeMediaMessage:
+      type: object
+      title: Message containing media
+      properties:
+        url:
+          description: Required. Url to the file.
+          type: string
+    typeMessageDeliveryReport:
+      description: A delivery receipt for message sent from an app.
+      type: object
+      title: Message Delivery Report
+      properties:
+        channel_identity:
+          $ref: "#/components/schemas/typeChannelIdentity"
+        contact_id:
+          description: Required. The ID of the contact.
+          type: string
+        conversation_id:
+          description: Required. The conversation ID this message belongs to.
+          type: string
+        message_id:
+          description: Required. The ID of the message.
+          type: string
+        metadata:
+          description: |-
+            Optional. Eventual metadata specified when sending the message.
+            Up to 1024 characters long.
+          type: string
+        reason:
+          $ref: "#/components/schemas/typeReason"
+        status:
+          $ref: "#/components/schemas/typeStatus"
+    typeMessageQueue:
+      type: string
+      default: NORMAL_PRIORITY
+      enum:
+        - NORMAL_PRIORITY
+        - HIGH_PRIORITY
+    typeOptIn:
+      description: |-
+        An Opt-In contains the identity of the recipient which
+        gave its consent to receive messages from Conversation API apps
+        on a given channel.
+      type: object
+      title: Represents an explicit Opt-In registration
+      properties:
+        app_id:
+          description: Required. The app for which the Opt-In is being registered.
+          type: string
+        channels:
+          description: |-
+            Required. The channels covered by this Opt-In.
+            The default are all the channels for a contact if recipient is
+            contact_id or the channels in the channel_identities list.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversationChannel"
+        recipient:
+          $ref: "#/components/schemas/typeRecipient"
+    typeOptInErrorDetails:
+      type: object
+      properties:
+        description:
+          description: Human-readable error description.
+          type: string
+    typeOptInNotification:
+      type: object
+      properties:
+        channel:
+          $ref: "#/components/schemas/typeConversationChannel"
+        contact_id:
+          description: Required. The contact for the channel identities.
+          type: string
+        error_details:
+          $ref: "#/components/schemas/typeOptInErrorDetails"
+        identity:
+          description: "Required. The channel identity e.g., a phone number for SMS, WhatsApp and Viber Business."
+          type: string
+        status:
+          $ref: "#/components/schemas/typeOptInStatus"
+    typeOptInStatus:
+      type: string
+      default: OPT_IN_STATUS_UNSPECIFIED
+      enum:
+        - OPT_IN_STATUS_UNSPECIFIED
+        - OPT_IN_SUCCEEDED
+        - OPT_IN_FAILED
+    typeOptOut:
+      description: |-
+        An Opt-Out contains the identity of the recipient which
+        retract its consent to receive messages from Conversation API apps
+        on a given channel.
+      type: object
+      title: Represents an explicit Opt-Out registration
+      properties:
+        app_id:
+          description: Required. The app for which the Opt-Out is being registered.
+          type: string
+        channels:
+          description: |-
+            Required. The channels covered by this Opt-Out.
+            The default are all the channels for a contact if recipient is
+            contact_id or the channels in the channel_identities list.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversationChannel"
+        recipient:
+          $ref: "#/components/schemas/typeRecipient"
+    typeOptOutErrorDetails:
+      type: object
+      properties:
+        description:
+          description: Human-readable error description.
+          type: string
+    typeOptOutNotification:
+      type: object
+      properties:
+        channel:
+          $ref: "#/components/schemas/typeConversationChannel"
+        contact_id:
+          description: Required. The contact for the channel identities.
+          type: string
+        error_details:
+          $ref: "#/components/schemas/typeOptOutErrorDetails"
+        identity:
+          description: "Required. The channel identity e.g., a phone number for SMS, WhatsApp and Viber Business."
+          type: string
+        status:
+          $ref: "#/components/schemas/typeOptOutStatus"
+    typeOptOutStatus:
+      type: string
+      default: OPT_OUT_STATUS_UNSPECIFIED
+      enum:
+        - OPT_OUT_STATUS_UNSPECIFIED
+        - OPT_OUT_SUCCEEDED
+        - OPT_OUT_FAILED
+    typeRateLimits:
+      type: object
+      properties:
+        inbound:
+          description: |-
+            Output only. The number of inbound messages/events we process per second,
+            from underlying channels to the app.  The default rate limit is 25.
+          type: integer
+          format: int64
+          readOnly: true
+        outbound:
+          description: |-
+            Output only. The number of messages/events we process per second, from the
+            app to the underlying channels. Note that underlying channels may have other
+            rate limits.  The default rate limit is 25.
+          type: integer
+          format: int64
+          readOnly: true
+        webhooks:
+          description: |-
+            Output only. The rate limit of callbacks sent to the webhooks registered
+            for the app. Note that if you have multiple webhooks with shared triggers,
+            multiple callbacks will be sent out for each triggering event. The default rate limit is 25.
+          type: integer
+          format: int64
+          readOnly: true
+    typeReason:
+      type: object
+      properties:
+        code:
+          $ref: "#/components/schemas/typeReasonCode"
+        description:
+          description: A textual description of the reason.
+          type: string
+    typeReasonCode:
+      description: |2-
+         - UNKNOWN: UNKNOWN is used if no other code can be used to describe the encountered error.
+         - INTERNAL_ERROR: An internal error occurred. Please save the entire callback if you want to
+        report an error.
+         - RATE_LIMITED: The message or event was not sent due to rate limiting.
+         - RECIPIENT_INVALID_CHANNEL_IDENTITY: The channel recipient identity was malformed.
+         - RECIPIENT_NOT_REACHABLE: It was not possible to reach the contact, or channel recipient identity,
+        on the channel.
+         - RECIPIENT_NOT_OPTED_IN: The contact, or channel recipient identity, has not opt-ed in on the channel.
+         - OUTSIDE_ALLOWED_SENDING_WINDOW: The allowed sending window has expired. See the channel documentation
+        for more information about how the sending window works for the different
+        channels.
+         - CHANNEL_FAILURE: The channel failed to accept the message. The Conversation API performs
+        multiple retries in case of transient errors
+         - CHANNEL_BAD_CONFIGURATION: The configuration of the channel for the used App is wrong. The bad
+        configuration caused the channel to reject the message. Please see
+        the channel support documentation page for how to set it up correctly.
+         - CHANNEL_CONFIGURATION_MISSING: The configuration of the channel is missing from the used App. Please see
+        the channel support documentation page for how to set it up correctly.
+         - MEDIA_TYPE_UNSUPPORTED: Some of the referenced media files is of a unsupported media type. Please
+        read the channel support documentation page to find out the limitations
+        on media that the different channels impose.
+         - MEDIA_TOO_LARGE: Some of the referenced media files are too large. Please read the channel
+        support documentation to find out the limitations on file size that the
+        different channels impose.
+         - MEDIA_NOT_REACHABLE: The provided media link was not accessible from the Conversation API or
+        from the underlying channels. Please make sure that the media file is
+        accessible.
+         - NO_CHANNELS_LEFT: No channels to try to send the message to. This error will occur if one
+        attempts to send a message to a channel with no channel identities or if
+        all applicable channels have been attempted.
+         - TEMPLATE_NOT_FOUND: The referenced template was not found.
+         - TEMPLATE_INSUFFICIENT_PARAMETERS: Sufficient template parameters was not given. All parameters defined
+        in the template must be provided when sending a template message
+         - TEMPLATE_NON_EXISTING_LANGUAGE_OR_VERSION: The selected language, or version, of the referenced template did
+        not exist. Please check the available versions and languages of the template
+         - DELIVERY_TIMED_OUT: The message delivery, or event delivery, failed due to a channel-imposed timeout.
+        See the channel support documentation page for further details
+        about how the different channels behave.
+         - DELIVERY_REJECTED_DUE_TO_POLICY: The message or event was rejected by the channel due to a policy.
+        Some channels have specific policies that must be met to send a message.
+        See the channel support documentation page for more information about
+        when this error will be triggered.
+         - CONTACT_NOT_FOUND: The provided Contact ID did not exist.
+         - BAD_REQUEST: Conversation API validates send requests in two different stages.
+        The first stage is right before the message is enqueued.
+        If this first validation fails the API responds with 400 Bad Request
+        and the request is discarded immediately.
+        The second validation kicks in during message processing and
+        it normally contains channel specific validation rules.
+        Failures during second request validation are
+        delivered as callbacks to MESSAGE_DELIVERY (EVENT_DELIVERY) webhooks
+        with ReasonCode BAD_REQUEST.
+         - UNKNOWN_APP: The used App is missing. This error may occur when the app is removed
+        during message processing.
+         - NO_CHANNEL_IDENTITY_FOR_CONTACT: The contact has no channel identities setup, or the contact has no
+        channels setup for the resolved channel priorities.
+      type: string
+      default: UNKNOWN
+      enum:
+        - UNKNOWN
+        - INTERNAL_ERROR
+        - RATE_LIMITED
+        - RECIPIENT_INVALID_CHANNEL_IDENTITY
+        - RECIPIENT_NOT_REACHABLE
+        - RECIPIENT_NOT_OPTED_IN
+        - OUTSIDE_ALLOWED_SENDING_WINDOW
+        - CHANNEL_FAILURE
+        - CHANNEL_BAD_CONFIGURATION
+        - CHANNEL_CONFIGURATION_MISSING
+        - MEDIA_TYPE_UNSUPPORTED
+        - MEDIA_TOO_LARGE
+        - MEDIA_NOT_REACHABLE
+        - NO_CHANNELS_LEFT
+        - TEMPLATE_NOT_FOUND
+        - TEMPLATE_INSUFFICIENT_PARAMETERS
+        - TEMPLATE_NON_EXISTING_LANGUAGE_OR_VERSION
+        - DELIVERY_TIMED_OUT
+        - DELIVERY_REJECTED_DUE_TO_POLICY
+        - CONTACT_NOT_FOUND
+        - BAD_REQUEST
+        - UNKNOWN_APP
+        - NO_CHANNEL_IDENTITY_FOR_CONTACT
+    typeRecipient:
+      type: object
+      title: Recipient
+      properties:
+        contact_id:
+          description: The ID of the receiving contact.
+          type: string
+        identified_by:
+          $ref: "#/components/schemas/typeChannelIdentities"
+    typeStaticBearerCredential:
+      description: It consists of claimed identity and a static token.
+      type: object
+      title: Bearer Channel Credential
+      properties:
+        claimed_identity:
+          description: Required. Claimed identity.
+          type: string
+        token:
+          description: Required. Static bearer token.
+          type: string
+    typeStaticTokenCredential:
+      type: object
+      title: Static Token Credential
+      properties:
+        token:
+          description: Required. The static token.
+          type: string
+    typeStatus:
+      description: |-
+        Note that not all statuses
+        are sent by the different channels.
+      type: string
+      title: Message/Event Status
+      default: STATUS_UNSPECIFIED
+      enum:
+        - STATUS_UNSPECIFIED
+        - QUEUED
+        - QUEUED_ON_CHANNEL
+        - DELIVERED
+        - READ
+        - FAILED
+        - SWITCHING_CHANNEL
+    typeTemplate:
+      type: object
+      properties:
+        channel:
+          $ref: "#/components/schemas/typeChannel"
+        create_time:
+          description: Timestamp when the template was created.
+          type: string
+          format: date-time
+        default_translation:
+          type: string
+          title: |-
+            The default translation to use if not specified.
+            Specified as a BCP-47 language_code and the language_code must exist
+            in the translations list.g
+        description:
+          description: The description of the template.
+          type: string
+        id:
+          description: |-
+            The id of the template. Specify this yourself during creation
+            otherwise we will generate an ID for you. This has to be unique
+            for a given project.
+          type: string
+        translations:
+          description: List of translations for the template.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeTemplateTranslation"
+        update_time:
+          description: Timestamp when the template was updated.
+          type: string
+          format: date-time
+    typeTemplateMessage:
+      type: object
+      title: Message referring to predefined template
+      properties:
+        channel_template:
+          description: |-
+            Optional. Channel specific template reference with parameters per channel.
+            The channel template if exists overrides the omnichannel template.
+            At least one of channel_template or omni_template needs to be present.
+            The key in the map must point to a valid conversation channel as
+            defined by the enum ConversationChannel.
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/typeTemplateReference"
+        omni_template:
+          $ref: "#/components/schemas/typeTemplateReference"
+    typeTemplateReference:
+      description: |-
+        The referenced template can be an omnichannel template
+        stored in Conversation API Template Store as AppMessage
+        or it can reference external channel-specific template
+        such as WhatsApp Business Template.
+      type: object
+      title: Template reference with concrete parameter values
+      properties:
+        language_code:
+          description: |-
+            Optional. The BCP-47 language code, such as "en-US" or "sr-Latn".
+            For more information, see http://www.unicode.org/reports/tr35/#Unicode_locale_identifier.
+            English is the default language_code.
+          type: string
+        parameters:
+          description: |-
+            Optional. Required if the template
+            has parameters. Concrete values must
+            be present for all defined parameters
+            in the template. Parameters can be different for
+            different versions and/or languages of the template.
+          type: object
+          additionalProperties:
+            type: string
+        template_id:
+          description: Required. The ID of the template.
+          type: string
+        version:
+          description: |-
+            Required. Used to specify what version of a template to use.
+            This will be used in conjunction with language_code.
+          type: string
+    typeTemplateTranslation:
+      type: object
+      properties:
+        content:
+          description: |-
+            This is the definition of the template with the language
+            specified in the language_code field.
+          type: string
+        create_time:
+          description: Timestamp when the translation was created.
+          type: string
+          format: date-time
+        language_code:
+          description: |-
+            The BCP-47 language code, such as "en-US" or "sr-Latn". For more information,
+            see http://www.unicode.org/reports/tr35/#Unicode_locale_identifier.
+          type: string
+        update_time:
+          description: Timestamp of when the translation was updated.
+          type: string
+          format: date-time
+        variables:
+          description: List of expected variables. Can be used for request validation.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeTemplateVariable"
+        version:
+          description: The version of template.
+          type: string
+    typeTemplateVariable:
+      type: object
+      properties:
+        key:
+          type: string
+        preview_value:
+          type: string
+    typeTextMessage:
+      type: object
+      title: Message containing only text
+      properties:
+        text:
+          description: Required. The text to be sent.
+          type: string
+    typeUnsupportedCallback:
+      description: |-
+        A callback received on a channel which is not
+        natively supported by Conversation API.
+      type: object
+      title: Unsupported Channel Callback
+      properties:
+        channel:
+          $ref: "#/components/schemas/typeConversationChannel"
+        payload:
+          description: Output only. The unsupported callback received by the Conversation API.
+          type: string
+          readOnly: true
+    typeUrlMessage:
+      description: A generic URL message.
+      type: object
+      title: Url Message
+      properties:
+        title:
+          description: |-
+            Required. The title shown close to the URL.
+            The title will be clickable in some cases.
+          type: string
+        url:
+          description: Required. The url to show.
+          type: string
+    typeWebhook:
+      description: Represents a destination for receiving callbacks from the Conversation API.
+      type: object
+      title: Webhook
+      properties:
+        app_id:
+          description: The app that this webhook belongs to.
+          type: string
+        id:
+          description: Output only. The ID of the webhook.
+          type: string
+          readOnly: true
+        secret:
+          description: |-
+            Optional secret be used to sign contents of webhooks sent by the Conversation API.
+            You can then use the secret to verify the signature.
+          type: string
+        target:
+          description: |-
+            The target url where events should be sent to.
+            Maximum URL length is 742.
+          type: string
+        target_type:
+          $ref: "#/components/schemas/typeWebhookTargetType"
+        triggers:
+          description: |-
+            An array of triggers that should trigger the webhook and result in a
+            event being sent to the target url.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeWebhookTrigger"
+    typeWebhookTargetType:
+      type: string
+      default: DISMISS
+      enum:
+        - DISMISS
+        - GRPC
+        - HTTP
+    typeWebhookTrigger:
+      description: |-
+        - UNSPECIFIED_TRIGGER: Using this value will cause errors.
+         - MESSAGE_DELIVERY: Subscribe to delivery receipts for a message sent.
+         - EVENT_DELIVERY: Subscribe to delivery receipts for a event sent.
+         - MESSAGE_INBOUND: Subscribe to inbound messages from end users on the underlying channels.
+         - EVENT_INBOUND: Subscribe to inbound events from end users on the underlying channels.
+         - CONVERSATION_START: Subscribe to an event that is triggered when a new conversation has been started.
+         - CONVERSATION_STOP: Subscribe to an event that is triggered when a active conversation has been stopped.
+         - CONTACT_CREATE: Subscribe to an event that is triggered when a new contact has been created.
+         - CONTACT_DELETE: Subscribe to an event that is triggered when a contact has been deleted.
+         - CONTACT_MERGE: Subscribe to an event that is triggered when a two contacts are merged.
+         - UNSUPPORTED: Subscribe to callbacks that are not natively supported by the Conversation API.
+         - OPT_IN: Subscribe to opt_ins.
+         - OPT_OUT: Subscribe to opt_outs.
+         - CAPABILITY: Subscribe to see get capability results.
+      type: string
+      title: En event triggering Conversation API callback
+      default: UNSPECIFIED_TRIGGER
+      enum:
+        - UNSPECIFIED_TRIGGER
+        - MESSAGE_DELIVERY
+        - EVENT_DELIVERY
+        - MESSAGE_INBOUND
+        - EVENT_INBOUND
+        - CONVERSATION_START
+        - CONVERSATION_STOP
+        - CONTACT_CREATE
+        - CONTACT_DELETE
+        - CONTACT_MERGE
+        - UNSUPPORTED
+        - OPT_IN
+        - OPT_OUT
+        - CAPABILITY
+    v1betaListAppsResponse:
+      type: object
+      properties:
+        apps:
+          description: List of apps belonging to a specific project ID.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeApp"
+    v1betaListContactsResponse:
+      type: object
+      properties:
+        contacts:
+          description: List of contacts belonging to the specified project.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeContact"
+        next_page_token:
+          description: |-
+            Token that should be included in the next list contacts request to
+            fetch the next page.
+          type: string
+    v1betaListConversationsResponse:
+      type: object
+      properties:
+        conversations:
+          description: Output only. List of conversations matching the search query.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversation"
+          readOnly: true
+        next_page_token:
+          type: string
+        total_size:
+          type: integer
+          format: int32
+    v1betaListMessagesResponse:
+      type: object
+      properties:
+        messages:
+          description: Output only. List of messages associated to the referenced conversation.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversationMessage"
+          readOnly: true
+        next_page_token:
+          type: string
+    v1betaListTemplatesResponse:
+      type: object
+      properties:
+        templates:
+          type: array
+          title: "TODO: Pagination"
+          items:
+            $ref: "#/components/schemas/typeTemplate"
+    v1betaListWebhooksResponse:
+      type: object
+      properties:
+        webhooks:
+          type: array
+          title: List of webhooks belonging to a specific project ID and app ID
+          items:
+            $ref: "#/components/schemas/typeWebhook"
+    v1betaMergeContactRequest:
+      type: object
+      properties:
+        destination_id:
+          description: Required. The ID of the contact that should be kept.
+          type: string
+        project_id:
+          description: Required. The project ID.
+          type: string
+        source_id:
+          description: Required. The ID of the contact that should be removed.
+          type: string
+        strategy:
+          $ref: "#/components/schemas/typeConversationMergeStrategy"
+    v1betaQueryCapabilityRequest:
+      type: object
+      properties:
+        app_id:
+          description: Required. The ID of the app to use for capability lookup.
+          type: string
+        project_id:
+          description: Required. The project ID.
+          type: string
+        recipient:
+          $ref: "#/components/schemas/typeRecipient"
+    v1betaQueryCapabilityResponse:
+      description: |-
+        An CapabilityResponse contains the identity of the recipient for which
+        will be perform a capability lookup.
+      type: object
+      title: Represents an explicit Capability registration
+      properties:
+        app_id:
+          description: Required. The ID of the app to use for capability lookup.
+          type: string
+        recipient:
+          $ref: "#/components/schemas/typeRecipient"
+    v1betaSendCallbackRequest:
+      type: object
+      properties:
+        accepted_time:
+          description: Required. The timestamp when the callback was accepted by the Conversation API.
+          type: string
+          format: date-time
+        app_id:
+          description: Optional. The ID of the app if the callback is associated with an app.
+          type: string
+        capability_notification:
+          $ref: "#/components/schemas/typeCapabilityNotification"
+        contact_create_notification:
+          $ref: "#/components/schemas/typeContactCreateNotification"
+        contact_delete_notification:
+          $ref: "#/components/schemas/typeContactDeleteNotification"
+        contact_merge_notification:
+          $ref: "#/components/schemas/typeContactMergeNotification"
+        conversation_start_notification:
+          $ref: "#/components/schemas/typeConversationStartNotification"
+        conversation_stop_notification:
+          $ref: "#/components/schemas/typeConversationStopNotification"
+        event:
+          $ref: "#/components/schemas/typeConversationEvent"
+        event_delivery_report:
+          $ref: "#/components/schemas/typeEventDeliveryReport"
+        message:
+          $ref: "#/components/schemas/typeConversationMessage"
+        message_delivery_report:
+          $ref: "#/components/schemas/typeMessageDeliveryReport"
+        opt_in_notification:
+          $ref: "#/components/schemas/typeOptInNotification"
+        opt_out_notification:
+          $ref: "#/components/schemas/typeOptOutNotification"
+        unsupported_callback:
+          $ref: "#/components/schemas/typeUnsupportedCallback"
+    v1betaSendEventRequest:
+      type: object
+      properties:
+        app_id:
+          description: Required. The ID of the app sending the event.
+          type: string
+        callback_url:
+          description: |-
+            Optional. Overwrites the default callback url for delivery reports for this event
+            The REST URL should be of the form: scheme://host[:port]/path
+            where scheme is http or https.
+            The gRPC URL should be of the form: dns://host[:port]
+            (See: https://github.com/grpc/grpc/blob/master/doc/naming.md).
+          type: string
+        channel_priority_order:
+          description: |-
+            Optional. Channel priority order that dictates on which channels the
+            Conversation API should try to send the message on. The order provided
+            here overrides any default.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversationChannel"
+        event:
+          $ref: "#/components/schemas/typeAppEvent"
+        event_metadata:
+          description: Optional. Eventual metadata that should be associated to the event.
+          type: string
+        project_id:
+          description: Required. The project ID.
+          type: string
+        queue:
+          $ref: "#/components/schemas/typeMessageQueue"
+        recipient:
+          $ref: "#/components/schemas/typeRecipient"
+    v1betaSendEventResponse:
+      type: object
+      properties:
+        accepted_time:
+          description: Output only. Accepted timestamp.
+          type: string
+          format: date-time
+          readOnly: true
+        event_id:
+          description: Output only. Event id.
+          type: string
+          readOnly: true
+    v1betaSendMessageRequest:
+      type: object
+      properties:
+        app_id:
+          description: Required. The ID of the app sending the message.
+          type: string
+        callback_url:
+          description: |-
+            Optional. Overwrites the default callback url for delivery reports for this message
+            The REST URL should be of the form: scheme://host[:port]/path
+            where scheme is http or https.
+            The gRPC URL should be of the form: dns://host[:port]
+            (See: https://github.com/grpc/grpc/blob/master/doc/naming.md).
+          type: string
+        channel_priority_order:
+          description: |-
+            Optional. Explicitly define the channels and order in which they are tried when sending the message.
+            Which channels the API will try and their priority is defined by:
+            1. channel_priority_order if available.
+            2. recipient.identified_by.channel_identities if available.
+            3. When recipient is a contact_id:
+              - if a conversation with the contact exists: the active channel of the conversation is tried first.
+              - the existing channels for the contact are ordered by contact channel preferences if given.
+              - lastly the existing channels for the contact are ordered by the app priority.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversationChannel"
+        message:
+          $ref: "#/components/schemas/typeAppMessage"
+        message_metadata:
+          description: Optional. Eventual metadata that should be associated to the message.
+          type: string
+        project_id:
+          description: Required. The project ID.
+          type: string
+        queue:
+          $ref: "#/components/schemas/typeMessageQueue"
+        recipient:
+          $ref: "#/components/schemas/typeRecipient"
+    v1betaSendMessageResponse:
+      type: object
+      properties:
+        accepted_time:
+          description: |-
+            Output only. Timestamp corresponding to when the Conversation API
+            accepted the message for delivery to the referenced contact.
+          type: string
+          format: date-time
+          readOnly: true
+        message_id:
+          description: Output only. Message id.
+          type: string
+          readOnly: true
+    v1betaTranscodeMessageRequest:
+      type: object
+      properties:
+        app_id:
+          description: Required. The ID of the app used to transcode the message.
+          type: string
+        app_message:
+          $ref: "#/components/schemas/typeAppMessage"
+        channels:
+          description: Required. The list of channels for which the message shall be transcoded to.
+          type: array
+          items:
+            $ref: "#/components/schemas/typeConversationChannel"
+        from:
+          description: Optional.
+          type: string
+        project_id:
+          description: Required. The project ID.
+          type: string
+        to:
+          description: Optional.
+          type: string
+    v1betaTranscodeMessageResponse:
+      type: object
+      properties:
+        transcoded_message:
+          description: |-
+            Output only. The transcoded message for the different channels.
+            The keys in the map correspond to channel names, as defined by the type
+            ConversationChannel.
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+x-proxy-enabled: true
+x-samples-enabled: true

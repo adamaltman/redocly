@@ -107,7 +107,7 @@ export const theme = {
   // },
 
   typography: {
-    fontSize: "14px",
+    fontSize: "1.0em",
     lineHeight: "1.5em",
     fontWeightRegular: "400",
     fontWeightBold: "600",
@@ -167,7 +167,7 @@ export const theme = {
   rightPanel: {
     backgroundColor: "#263238",
     width: "25%",
-    textColor: "purple",
+    textColor: "lightgray",
     fontSize: "2em !important",
   },
   schema: {

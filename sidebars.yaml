@@ -93,9 +93,9 @@ conversation:
     pages:
       - page: docs/conversation/getting-started/*
   - page: docs/conversation/conversation-channel-support.md
-  - group: API referemce
+  - group: API reference
     pages:
-      - page: specs/verification.page.yaml/*
+      - page: specs/conversation.page.yaml/*
 verification:
   - page: docs/verification/index.md
   - group: Rest

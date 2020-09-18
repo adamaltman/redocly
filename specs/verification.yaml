@@ -1,1 +1,413 @@
-{"openapi":"3.0.0","tags":[{"name":"Messaging","description":"Send messages through the API"},{"name":"Conversations","description":"Retrieve data about conversations for a bot and execute actions"},{"name":"Bots","description":"Retrieve information about your bots"},{"name":"NLP","description":"Extract results from the Chatlayer NLP models of your bots"}],"x-explorer-enabled":false,"x-samples-enabled":true,"x-samples-languages":["curl","java","csharp","node","php"],"x-headers":[{"key":"Authorization","value":"Bearer {token}"}],"info":{"title":"Chatlayer","version":"1.0","description":"# Overview\n\nChatlayer.ai provides a REST JSON API to retrieve, create data and manipulate data from third party applications and a webhook configuration to notify you when a variety of interactions or events happen, including when a bot sends a message. Webhook events are sent by Chatlayer.ai as POST requests to your webhook.\nThis document describes what can be done, under which conditions and the expected input and output formats and communication mechanism.\nNote that the API can easily be tested from any web browser, command line terminal or API development environment.\n\n# Building HTTP Requests\n\n## Scheme and hostname\n\nAny request to the API *must* be done with the HTTPS scheme.\n\n## Versioning\n\nAny bot you build in Chatlayer.ai will have two versions. You can use the *DRAFT* version to develop and test new flows for your bot. Once you have developped and tested a specific flow, the changes in the *DRAFT* version can easily be published to the *LIVE* version in the platform.\n\nSome endpoints in this API allow you to retrieve or manipulate data specific to either the *DRAFT* or the *LIVE* version. Use the `version` query parameter to indicate which version you are referring to.","contact":{"name":"Support","url":"https://www.chatlayer.ai","email":"support@chatlayer.ai"},"termsOfService":"https://www.chatlayer.ai"},"servers":[{"url":"https://api.chatlayer.ai","description":"Chatlayer API URL"}],"paths":{"/v1/channels/webhook/{channelId}/messages":{"parameters":[{"schema":{"type":"string"},"name":"channelId","in":"path","required":true}],"post":{"summary":"Send messages through a Webhook channel","responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","example":"EVENT_RECEIVED"}}}}}}},"operationId":"sendWebhookMessage","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserWebhookMessageRequest"}}}},"tags":["Messaging"],"description":"Send messages through a webhook channel through this endpoint. You can set up a Webhook API for your bot in the platform or through the API. Find more details on how to set up a Webhook API in [the Chatlayer.ai documentation](https://docs.chatlayer.ai/channels/webhook-api#register-a-webhook-api).\n\nThe response to any message will be sent to a callback in your Webhook API. Please refer to [this section of our documentation](https://docs.chatlayer.ai/channels/webhook-api#message-objects) to get a detailed description of each message type in the callbacks."}},"/v1/bots/{botId}/conversations/{conversationId}/session-data":{"parameters":[{"schema":{"type":"string"},"name":"conversationId","in":"path","required":true},{"schema":{"type":"string"},"name":"botId","in":"path","required":true}],"get":{"summary":"Get all session data for a conversation by id","tags":["Conversations"],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"type":"object","properties":{"[key]":{"type":"string"}}},"examples":{"example":{"value":{"name":"John Doe","age":25}}}}}},"400":{"description":"Bad Request","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"Unauthorized","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"404":{"description":"Not Found","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}},"operationId":"getConversationSessionData","parameters":[{"schema":{"type":"string","enum":["DRAFT","LIVE"]},"in":"query","name":"version","required":true},{"schema":{"type":"string"},"in":"query","name":"namespace","description":"Only return data for a specific namespace"}],"description":"This method can be used to retrieve user session data. A namespace is used to save your session data into. You can use this data for interpolation of session variable values in messages, API requests, etc."}},"/v1/bots/{botId}/conversations/{conversationId}/actions":{"parameters":[{"schema":{"type":"string"},"name":"botId","in":"path","required":true},{"schema":{"type":"string"},"name":"conversationId","in":"path","required":true}],"post":{"summary":"Execute an action for a given conversation by id","tags":["Conversations"],"responses":{"200":{"description":"OK"},"400":{"description":"Bad Request","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"Unauthorized","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"404":{"description":"Not Found","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}},"operationId":"executeConversationAction","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ExecuteConversationActionRequest"},"examples":{"sendAttachmentExample":{"value":{"sendMessages":[{"attachmentTemplate":{"media":{"url":"https://via.placeholder.com/150","type":"image"}}}]}},"sendListTemplateExample":{"value":{"sendMessages":[{"listTemplate":{"size":"LARGE","button":{"urlButton":{"title":"Visit the docs","url":"https://docs.chatlayer.ai"}},"elements":[{"button":{"urlButton":{"title":"Visit the docs","url":"https://docs.chatlayer.ai"}},"imageUrl":"https://via.placeholder.com/400","title":"Visit Chatlayer.ai Docs","subTitle":"This is a subTitle"},{"button":{"urlButton":{"title":"Visit the website","url":"https://chatlayer.ai"}},"imageUrl":"https://via.placeholder.com/400","title":"Visit Chatlayer.ai Website"}]}}]}},"sendCarouselTemplateExample":{"value":{"sendMessages":[{"carouselTemplate":{"elements":[{"buttons":[{"urlButton":{"title":"Visit the docs","url":"https://docs.chatlayer.ai"}}],"imageUrl":"https://via.placeholder.com/400","title":"Visit Chatlayer.ai Docs","subTitle":"This is a subTitle"},{"buttons":[{"urlButton":{"title":"Visit the website","url":"https://chatlayer.ai"}}],"imageUrl":"https://via.placeholder.com/400","title":"Visit Chatlayer.ai Website"}]}}]}},"sendQuickReplyExample":{"value":{"sendMessages":[{"quickReplyTemplate":{"textMessages":[{"text":"Random Message One"},{"text":"Random Message Two"}],"quickReplies":[{"imageUrl":"https://via.placeholder.com/10","title":"Set A","payload":{"nextDialogstateId":"71001a34-c557-40a1-8635-969ac4f8a3e6","sessionDataToSet":[{"key":"a","value":"a"}]}},{"imageUrl":"https://via.placeholder.com/10","title":"Set B","payload":{"nextDialogstateId":"71001a34-c557-40a1-8635-969ac4f8a3e6","sessionDataToSet":[{"key":"b","value":"b"}]}},{"imageUrl":"https://via.placeholder.com/10","title":"Set C","payload":{"nextDialogstateId":"71001a34-c557-40a1-8635-969ac4f8a3e6","sessionDataToSet":[{"key":"C","value":"C"}]}}]}}]}},"sendButtonsExample":{"value":{"sendMessages":[{"buttonTemplate":{"textMessages":[{"text":"Random Message One"},{"text":"Random Message Two"}],"buttons":[{"urlButton":{"title":"Visit Chatlayer.ai","url":"https://www.chatlayer.ai"}},{"phoneNumberButton":{"title":"Call Chatlayer","phoneNumber":"phoneNumber"}},{"postBackButton":{"title":"More info","payload":{"nextDialogstateId":"71001a34-c557-40a1-8635-969ac4f8a3e6","sessionDataToSet":[{"key":"test","value":"test"}]}}}]}}]}},"sendTextMessageExample":{"value":{"sendMessages":[{"textMessageTemplate":{"textMessages":[{"text":"Random Message One"},{"text":"Random Message Two"}]}}]}},"setSessionDataExample":{"value":{"setSessionData":[{"namespace":"objectVar","data":{"item1":"value1","item2":"value2"}},{"namespace":"textVar","data":"TEXT"},{"namespace":"numVar","data":0},{"namespace":"arrayVar","data":[1,2,"3",{"text":"four"}]}]}}}}},"description":""},"parameters":[{"schema":{"type":"string","enum":["DRAFT","LIVE"]},"in":"query","name":"version","required":true}],"description":"Use this endpoint to trigger a dialogstate, pause a session, send messages or save session data asynchronously. A typical use case is an action based on the triggering of a custom component on your own website."}},"/v1/bots":{"parameters":[],"get":{"summary":"Get a list of all bots for an organization","tags":["Bots"],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/Bot"}},"examples":{"botsByOrganizationExample":{"value":[{"defaultLanguage":"nl","createdAt":1586254220314,"id":"1075","name":"TestBot2","languages":["nl","fr"],"organizationId":"46b13b46-bbdb-499e-9911-3b351e57cfaf","typingDuration":500,"status":"ENABLED","draftStatus":"ENABLED","__typename":"Bot"},{"defaultLanguage":"en","createdAt":1588691744862,"id":"1077","name":"TestBot","languages":["en"],"organizationId":"46b13b46-bbdb-499e-9911-3b351e57cfaf","typingDuration":500,"status":"ENABLED","draftStatus":"ENABLED","__typename":"Bot"}]}}}}},"400":{"description":"Bad Request","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"Unauthorized","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"404":{"description":"Not Found","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}},"operationId":"getBotList","description":"Use this endpoint to get a list of all bots for your organization."}},"/v1/bots/{botId}":{"get":{"summary":"Get a bot by id","tags":["Bots"],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Bot"},"examples":{"botByIdExample":{"value":{"defaultLanguage":"en","createdAt":1588691744862,"id":"1077","name":"TestBot","languages":["en"],"organizationId":"46b13b46-bbdb-499e-9911-3b351e57cfaf","typingDuration":500,"status":"ENABLED","draftStatus":"ENABLED","__typename":"Bot"}}}}}},"400":{"description":"Bad Request","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"Unauthorized","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"404":{"description":"Not Found","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}},"operationId":"getBotById","description":"Get the details for a specific bot by its id."},"parameters":[{"schema":{"type":"string"},"name":"botId","in":"path","required":true}]},"/v1/bots/{botId}/nlp/extract":{"parameters":[{"schema":{"type":"string"},"name":"botId","in":"path","required":true}],"post":{"summary":"Extract the NLP result","tags":["NLP"],"operationId":"extractNLPResult","responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"type":"object","properties":{}},"examples":{"nlpResultExample1":{"value":{"extract":{"score":0.9974573911422157,"intent":"who are you","query":"Tell me, who are you?","exactMatchedIntent":null,"entities":[],"intents":[{"intent":"who are you","score":0.9974573911422157,"__typename":"ExtractResultIntent"},{"intent":"what can you do","score":0.0012368730415771181,"__typename":"ExtractResultIntent"},{"intent":"how are you","score":0.000297321495263762,"__typename":"ExtractResultIntent"},{"intent":"book train ticket","score":0.00004229794114483522,"__typename":"ExtractResultIntent"},{"intent":"benefits","score":0.00003783821796122848,"__typename":"ExtractResultIntent"}],"sentiment":{"sentiment":"neutral","score":0.8290907264769565,"results":[{"sentiment":"neutral","score":0.8290907264769565,"__typename":"ExtractResultSentiment"},{"sentiment":"positive","score":0.12024377287389826,"__typename":"ExtractResultSentiment"},{"sentiment":"negative","score":0.05066550064914516,"__typename":"ExtractResultSentiment"}],"__typename":"ExtractResultSentimentResult"},"entityThreshold":0,"intentThreshold":0,"nlpProviderEntityThreshold":0.7,"nlpProviderIntentThreshold":0.8,"__typename":"ExtractResult"}}}}}}},"400":{"description":"Bad Request","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"Unauthorized","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"404":{"description":"Not Found","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}},"description":"Pass a single expression to this endpoint to extract an NLP result. The result contains data about matched intents, entities and their performance scores.","parameters":[{"schema":{"type":"string","enum":["DRAFT","LIVE"]},"in":"query","name":"version","required":true}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ExtractNLPResultRequest"}}}}}},"/v1/bots/{botId}/channels":{"parameters":[{"schema":{"type":"string"},"name":"botId","in":"path","required":true}],"get":{"summary":"List channels for a bot","responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/WebhookBotChannel"}},"examples":{"example-1":{"value":[{"__typename":"WebhookBotChannel","id":"5eebcd7d43a9bdac750a2921","version":"DRAFT","botId":"1077"}]}}}}},"400":{"description":"Bad Request","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"Unauthorized","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"404":{"description":"Not Found","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}},"operationId":"listBotChannels","parameters":[{"schema":{"type":"string","enum":["DRAFT","LIVE"]},"in":"query","name":"version","required":true}],"description":"Get the list of channels configured for a bot. Only webhook channels will be returned.","tags":["Bots"]}},"/v1/bots/{botId}/channels/{channelId}":{"parameters":[{"schema":{"type":"string"},"name":"botId","in":"path","required":true},{"schema":{"type":"string"},"name":"channelId","in":"path","required":true}],"delete":{"summary":"Delete a channel for a bot","operationId":"deleteBotChannelById","responses":{"204":{"description":"No Content"},"400":{"description":"Bad Request","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"Unauthorized","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"404":{"description":"Not Found","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}},"description":"Use this endpoint to delete a channel by id. Use [/v1/bots/{botId}/channels](#/Bots/listBotChannels) to get a list of channels with their id's.","tags":["Bots"]}},"/v1/bots/{botId}/channels/webhook":{"parameters":[{"schema":{"type":"string"},"name":"botId","in":"path","required":true}],"post":{"summary":"Create webhook channel","tags":["Bots"],"responses":{"200":{"description":"OK","content":{"application/json":{"schema":{"$ref":"#/components/schemas/WebhookBotChannel"},"examples":{"example1":{"value":{"__typename":"WebhookBotChannel","id":"5eebcd7d43a9bdac750a2921","version":"DRAFT","botId":"1077"}}}}}},"400":{"description":"Bad Request","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"401":{"description":"Unauthorized","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}},"404":{"description":"Not Found","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}},"operationId":"createWebhookChannel","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateWebhookChannelRequest"},"examples":{"example-1":{"value":{"url":"https://my-chatlayer-webhook-test-api.com/bots/choochoo/webhook-events","verifyToken":"KDt<zv9))j$G`>z-!dQ)(xS_9NL2V[","withTyping":true,"version":"LIVE"}}}}}},"description":"Add a webhook channel to your bot."}}},"components":{"schemas":{"Bot":{"title":"Bot","type":"object","x-examples":{"exampleBot":{"defaultLanguage":"en","createdAt":1588691744862,"id":"1077","name":"TestBot","languages":["en"],"organizationId":"<uuid>","typingDuration":500,"status":"ENABLED","draftStatus":"ENABLED","__typename":"Bot"}},"description":"","properties":{"defaultLanguage":{"type":"string","description":"The default language in which your bot will reply if the language of a user is unknown"},"createdAt":{"type":"number","description":"The timestamp of creation"},"id":{"type":"string","description":"The id of your bot"},"name":{"type":"string","description":"The name of your bot"},"languages":{"type":"array","description":"Other languages that are supported by your bot","items":{"type":"string"}},"organizationId":{"type":"string","description":"The id of the organization that owns this bot"},"typingDuration":{"type":"number","description":"The typing delay between messages of your bot"},"status":{"$ref":"#/components/schemas/BotStatus"},"draftStatus":{"$ref":"#/components/schemas/BotStatus"}},"required":["defaultLanguage","createdAt","id","name","languages","organizationId","typingDuration","status","draftStatus"]},"BotStatus":{"type":"string","description":"Indicates if a bot is enabled or disabled. Disabled bots will always reply with the *Bot Disabled* bot dialog","enum":["ENABLED","DISABLED"]},"WebhookBotChannel":{"title":"WebhookBotChannel","type":"object","properties":{"id":{"type":"string"},"version":{"$ref":"#/components/schemas/BotVersion"},"botId":{"type":"string"},"__typename":{"type":"string","enum":["WebhookBotChannel"]}},"required":["id","version","botId","__typename"]},"BotVersion":{"type":"string","title":"BotVersion","enum":["DRAFT","LIVE"]},"UserTextMessage":{"title":"TextMessage","type":"object","description":"A written text message","properties":{"text":{"type":"string","description":"The text content of the message"}},"required":["text"]},"UserIntroMessage":{"title":"IntroMessage","type":"object","description":"An empty message that will trigger the Bot to send the introduction message"},"UserLocationMessage":{"title":"LocationMessage","type":"object","description":"A message containing data about a location","properties":{"coordinates":{"$ref":"#/components/schemas/UserLocationMessageCoordinates"}},"required":["coordinates"]},"UserPostbackMessage":{"title":"PostbackMessage","type":"object","description":"A message that allows you to trigger a bot dialog in the flow. You should use this message when a user clicks a GoTo button.","properties":{"title":{"type":"string"},"nextDialogstateId":{"type":"string","description":"The next bot dialog that the bot should send to a user"},"sessionDataToSet":{"type":"array","description":"A list of variables that should be updated on the session when the bot receives this message","items":{"$ref":"#/components/schemas/UserPostbackMessageParameter"}}},"required":["nextDialogstateId"]},"UserPostbackMessageParameter":{"title":"PostbackParameter","type":"object","properties":{"key":{"type":"string","description":"The key or property name of the session value that will be updated"},"value":{"type":"string","description":"The new value of the session property"}},"required":["key","value"]},"UserLocationMessageCoordinates":{"title":"LocationMessageCoordinates","description":"An object containing details about a location","type":"object","properties":{"lat":{"description":"The latitude of a location","type":"number"},"long":{"description":"The longitude of a location","type":"number"}}},"UserWebhookMessageRequest":{"title":"WebhookMessage","type":"object","properties":{"message":{"$ref":"#/components/schemas/UserWebhookMessage"},"conversationId":{"type":"string"}},"required":["message","conversationId"]},"UserWebhookMessage":{"type":"object","title":"WebhookMessage","maxProperties":1,"minProperties":1,"additionalProperties":false,"properties":{"introMessage":{"$ref":"#/components/schemas/UserIntroMessage"},"textMessage":{"$ref":"#/components/schemas/UserTextMessage"},"locationMessage":{"$ref":"#/components/schemas/UserLocationMessage"},"postbackMessage":{"$ref":"#/components/schemas/UserPostbackMessage"}}},"ExecuteConversationActionRequest":{"title":"ExecuteActionsRequest","type":"object","properties":{"sendMessages":{"type":"array","items":{"$ref":"#/components/schemas/BotMessageTemplate"}},"setSessionData":{"type":"array","maxItems":50,"items":{"$ref":"#/components/schemas/SetSessionDataAction"}},"setOffloadingOptions":{"$ref":"#/components/schemas/SetOffloadingOptionsAction"},"triggerDialogstate":{"$ref":"#/components/schemas/TriggerDialogstateAction"},"options":{"type":"object","properties":{"withEvents":{"type":"boolean"}}}}},"SetSessionDataAction":{"title":"SetSessionDataAction","type":"object","properties":{"namespace":{"description":"The identifier of the namespace that will be overwritten","type":"string"},"data":{"description":"The new value that will be written to the provided session namespace","oneOf":[{"type":"object"},{"type":"string"},{"type":"number"},{"type":"boolean"},{"type":"integer"},{"type":"array","items":{}}]}},"required":["data"]},"SetOffloadingOptionsAction":{"title":"SetOffloadingOptionsAction","type":"object","description":"Set details related to humab handover/offloading of conversations","properties":{"offloadStatus":{"type":"string","enum":["obtained","requested","completed"]},"sessionStatus":{"type":"string","description":"Pause the bot for a certain conversation to prevent it from sending messages until you activate it again","enum":["active","paused"]}}},"TriggerDialogstateAction":{"title":"TriggerDialogstateAction","type":"object","properties":{"id":{"description":"The unique id of the bot dialog","type":"string"}}},"TextTemplate":{"title":"BotTextMessage","type":"object","description":"A template containing a plain text message","x-tags":["BotMessage"],"properties":{"textMessages":{"type":"array","description":"A list of text messages. If multiple messages are provided, a random message will be picked.","items":{"$ref":"#/components/schemas/BotTextMessage"}}},"required":["textMessages"]},"BotTextMessage":{"title":"BotTextMessage","type":"object","x-tags":["BotMessage"],"properties":{"text":{"description":"The text content of a message","type":"string"}},"required":["text"]},"BotButton":{"type":"object","title":"BotButton","minProperties":1,"maxProperties":1,"additionalProperties":false,"properties":{"postbackButton":{"$ref":"#/components/schemas/BotPostbackButton"},"urlButton":{"$ref":"#/components/schemas/BotURLButton"},"phoneNumberButton":{"$ref":"#/components/schemas/BotPhonenumberButton"}}},"BotURLButton":{"title":"BotURLButton","type":"object","description":"A button that will redirect a user to a url","properties":{"title":{"description":"The title of the button","type":"string"},"type":{"type":"string","enum":["web_url"]},"url":{"description":"The user will be redirected to this url after clicking the button","type":"string"}},"required":["title","url"]},"BotPhonenumberButton":{"title":"BotPhonenumberButton","type":"object","properties":{"title":{"description":"The title of the button","type":"string"},"phoneNumber":{"description":"The phone number that will be called after clicking this button","type":"string"}},"required":["title","url"]},"BotPostbackButton":{"title":"BotPostbackButton","type":"object","required":["title","payload"],"properties":{"title":{"type":"string","description":"The title of the button"},"payload":{"$ref":"#/components/schemas/BotPostbackButtonPayload"}}},"BotQuickReplyButton":{"title":"BotQuickReplyButton","type":"object","required":["title","payload"],"properties":{"imageUrl":{"type":"string","description":"The url of a thumbnail that will be shown in the button"},"title":{"type":"string","description":"The title of the button"},"payload":{"$ref":"#/components/schemas/BotPostbackButtonPayload"}}},"BotPostbackButtonPayload":{"title":"BotPostbackButtonPayload","description":"Details about the actions that will be taken after clicking the postback button","type":"object","properties":{"nextDialogstateId":{"type":"string","description":"The unique id of the bot dialog to be shown after clicking this button"},"sessionDataToSet":{"type":"array","items":{"$ref":"#/components/schemas/BotPostbackButtonParams"}}},"required":["nextDialogstateId"]},"BotPostbackButtonParams":{"title":"BotPostbackButtonParams","type":"object","properties":{"key":{"description":"The key/namespace of the session property that will be overwritten","type":"string"},"value":{"description":"The new value of the session property","type":"string"}},"required":["key"]},"ButtonTemplate":{"title":"ButtonTemplate","description":"A template containing a text message with up to 3 buttons.","type":"object","properties":{"textMessages":{"type":"array","items":{"$ref":"#/components/schemas/BotTextMessage"}},"buttons":{"type":"array","minItems":1,"maxItems":3,"items":{"$ref":"#/components/schemas/BotButton"}}},"required":["textMessages","buttons"]},"QuickReplyTemplate":{"title":"QuickReplyTemplate","description":"A template containing a plain text message with up to 10 quick replies","type":"object","properties":{"textMessages":{"type":"array","items":{"$ref":"#/components/schemas/BotTextMessage"}},"quickReplies":{"type":"array","minItems":1,"maxItems":10,"items":{"$ref":"#/components/schemas/BotQuickReplyButton"}}},"required":["textMessages","quickReplies"]},"BotCarouselElement":{"title":"BotCarouselElement","type":"object","properties":{"imageUrl":{"type":"string"},"subTitle":{"type":"string"},"title":{"type":"string"},"webUrl":{"type":"string"},"buttons":{"type":"array","items":{"$ref":"#/components/schemas/BotButton"}}},"required":["title","buttons"]},"CarouselTemplate":{"title":"CarouselTemplate","description":"A template containing a carousel","type":"object","properties":{"elements":{"type":"array","items":{"$ref":"#/components/schemas/BotCarouselElement"}}},"required":["elements"]},"BotListElement":{"title":"BotListElement","type":"object","properties":{"title":{"description":"The title","type":"string"},"subTitle":{"description":"The subtitle","type":"string"},"imageUrl":{"description":"The url to an image that will be shown in the header","type":"string"},"webUrl":{"description":"The url to which the user will be redirected when clicking this item","type":"string"},"buttons":{"type":"array","description":"A list of buttons that will be shown at the bottom of this carousel item","items":{"$ref":"#/components/schemas/BotButton"}}},"required":["title","subTitle","imageUrl"]},"ListTemplate":{"title":"ListTemplate","description":"A template containing list elements","type":"object","properties":{"size":{"type":"string","description":"The size of the list","enum":["LARGE","COMPACT"]},"button":{"$ref":"#/components/schemas/BotButton"},"elements":{"type":"array","items":{"$ref":"#/components/schemas/BotListElement"}}},"required":["elements"]},"AttachmentTemplate":{"title":"AttachmentTemplate","type":"object","properties":{"media":{"type":"object","required":["url"],"properties":{"url":{"description":"The url to the media resource","type":"string"},"type":{"description":"The type of the media resource","type":"string"}}}},"required":["media"]},"BotMessageTemplate":{"type":"object","minProperties":1,"maxProperties":1,"properties":{"textMessageTemplate":{"$ref":"#/components/schemas/TextTemplate"},"buttonTemplate":{"$ref":"#/components/schemas/ButtonTemplate"},"attachmentTemplate":{"$ref":"#/components/schemas/AttachmentTemplate"},"listTemplate":{"$ref":"#/components/schemas/ListTemplate"},"carouselTemplate":{"$ref":"#/components/schemas/CarouselTemplate"},"quickReplyTemplate":{"$ref":"#/components/schemas/QuickReplyTemplate"}}},"ExtractNLPResultRequest":{"title":"ExtractNLPResultRequest","type":"object","properties":{"language":{"type":"string","example":"en","description":"The language of the NLP model to be used"},"expression":{"type":"string","example":"How are you?","description":"The expression that will be processed by the NLP model for this request"},"options":{"type":"object","properties":{"includeSentiment":{"type":"boolean","default":"false","description":"Indicates if the NLP response should contain information about the expression's sentiment"},"saveIncomingExpression":{"type":"boolean","default":"false","description":"Indicates if the expression will be added to the list of incoming expressions. You can use this list to train your bot with new expressions that are not in the model yet."}}}},"required":["language","expression"]},"CreateWebhookChannelRequest":{"title":"CreateWebhookChannelRequest","type":"object","properties":{"url":{"type":"string","format":"uri","description":"This url will be used to POST all messages from the bot to."},"verifyToken":{"type":"string","description":"Use the verifyToken as an extra layer of security in your webhook integration. The verifyToken will be passed with each message to your endpoint."},"withTyping":{"type":"boolean","default":"false","description":"Set this property to true if you want multiple messages to arrive with a delay in between. The delay is equal to the typingDuration property of your bot."},"version":{"$ref":"#/components/schemas/BotVersion"}},"required":["url","verifyToken","version"]},"ErrorResponse":{"title":"Error","type":"object","properties":{"status":{"type":"number","enum":[400,500,401,404]},"message":{"type":"string"},"name":{"type":"string","enum":["BadRequest","NotFound","Unauthorized","InternalServerError"]},"details":{"oneOf":[{"type":"object"},{"type":"array","items":{}}]}},"required":["status","message","name"]}},"securitySchemes":{"AccessToken":{"type":"http","scheme":"bearer","description":"You *must* provide an access token for your organization on each of your API calls. Performing an unauthenticated request will result in a 401 HTTP Error response. You can generate an access token for your organization in the platform. Use an Authorization HTTP Header to pass your access token as a bearer token in an API request:\n\n```\nAuthorization: Bearer your_access_token\n```"}}},"security":[{"AccessToken":[]}],"x-proxy-enabled":true}
+openapi: 3.0.0
+info:
+  title: Verification
+  description: "Verification REST API for verifying phone numbers and users. Support of FlashCall verification, PIN SMS verification and Callout verification.\n\n**Note:** OTP CODE must be the full valid E.164 number that we called from.\n\n## Overview\n\nFor general information on how to use the Sinch APIs including methods, types, errors and authorization, please check the [Using REST](/docs/using-rest) page.\nUse the Sinch Verification Service to verify end-user's mobile phone numbers. The Sinch Verification APIs should be used in combination with the Verification SDKs for a complete end-to-end solution, though it is possible to only use the APIs. Currently, there are three verification methods supported:\n\n- FlashCall verification - Android only\n- PIN SMS verification - iOS, Android, Javascript\n- Callout verification (voice call) - iOS only\n\n#### FlashCall verification\n\nWith the flashCall verification method, a user's phone number is verified by triggering a \"missed call\" towards this number. The call is intercepted by the Android SDK in the mobile app and blocked automatically.\nTo initiate a flashCall verification, check the [Android SDK documentation](/docs/verification-android-the-verification-process#flash-call-verification). For additional security, it is recommended that you control which verification requests should proceed and which ones not, by listening in your backend for the [Verification Request Event](/docs/verification-rest-verification-api#verification-request) and respond accordingly. Your backend will be notified on the result of the verification with the [Verification Result Event](/docs/verification-rest-callback-api#verification-result-event).\n\n#### PIN SMS verification\n\nWith the PIN SMS verification method, a user's phone number is verified by sending an SMS containing a PIN code to this number. In the case of iOS or Javascript, the user needs to enter the PIN manually in the app, while for Android there is an option of intercepting the SMS message delivery and capturing the PIN code automatically.\nTo initiate a PIN SMS verification, check the [iOS](/docs/verification-ios-sms-verification), [Android](/docs/verification-for-android) and [Javascript](/docs/verification-for-javascript) documentation. For additional security, it is recommended that you control which verification requests should proceed and which ones not, by listening in your backend for the [Verification Request Event](/docs/verification-rest-verification-api#verification-request) and respond accordingly. Your backend will be notified on the result of the verification with the [Verification Result Event](/docs/verification-rest-callback-api#verification-result-event).\n\n#### Callout verification\n\nWith the callout verification method, a user's phone number is verified by receiving a phone call and hearing a pre-recorded or text-to-speech message, advising the user to press a digit code. When the user presses the digit code in the dialpad, the verification is successful.\nTo initiate a callout verification, check the [iOS documentation](/docs/verification-ios-callout-verification). For additional security, it is recommended that you control which verification requests should proceed and which ones not, by listening in your backend for the [Verification Request Event](/docs/verification-rest-verification-api#verification-request) and respond accordingly. Your backend will be notified on the result of the verification with the [Verification Result Event](/docs/verification-rest-callback-api#verification-result-event).\n\n> \U0001F4D8 For information about webhooks and the verifications events [Callbacks](/docs/verification-rest-callback-api)."
+  termsOfService: "https://www.sinch.com/terms-of-service/"
+  contact:
+    name: Sinch
+    url: "https://www.sinch.com/contact-us/"
+    email: support@sinch.com
+  version: "1.3"
+servers:
+  - url: "https://verificationapi-v1.sinch.com"
+paths:
+  /verification/v1/verifications:
+    post:
+      tags:
+        - Sending and Reporting verifications
+      summary: Start verification
+      description: "This method is used by the mobile and web Verification SDKs to start a verification. It can also be used to request a verification from your backend, by making an request."
+      operationId: StartVerification
+      requestBody:
+        x-name: request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InitiateVerificationResource"
+        required: true
+        x-position: 1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InitiateVerificationResponse"
+  "/verification/v1/verifications/{Type}/{Endpoint}":
+    put:
+      tags:
+        - Sending and Reporting verifications
+      summary: Verify verification code by Identity
+      description: Used to report OTP code.
+      operationId: ReportVerificationByIdentity
+      parameters:
+        - name: Type
+          in: path
+          required: true
+          description: Currently only 'number' type is supported.
+          schema:
+            type: string
+            nullable: true
+          x-position: 1
+        - name: Endpoint
+          in: path
+          required: true
+          description: For type 'number' use E.164 compatible phone number.
+          schema:
+            type: string
+            nullable: true
+          x-position: 2
+      requestBody:
+        x-name: request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerificationReportRequestResource"
+        required: true
+        x-position: 3
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationResponse"
+  "/verification/v1/verifications/id/{id}":
+    put:
+      tags:
+        - Sending and Reporting verifications
+      summary: Verify verification code by Id
+      description: Used to report OTP code.
+      operationId: ReportVerificationById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            nullable: true
+          x-position: 1
+      requestBody:
+        x-name: request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerificationReportRequestResource"
+        required: true
+        x-position: 2
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationResponse"
+    get:
+      tags:
+        - Query verifications
+      summary: Get verification by Id
+      description: Queries the verification result by sending the verification Id. With this query you can get the result of a verification.
+      operationId: VerificationStatusById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            nullable: true
+          x-position: 1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationResponse"
+  "/verification/v1/verifications/{method}/{Type}/{Endpoint}":
+    get:
+      tags:
+        - Query verifications
+      summary: Get verification by Identity
+      description: Queries the verification result by sending the verification Identity and its method. With this query you can get the result of a verification.
+      operationId: VerificationStatusByIdentity
+      parameters:
+        - name: Type
+          in: path
+          required: true
+          description: Currently only 'number' type is supported.
+          schema:
+            type: string
+            nullable: true
+          x-position: 1
+        - name: Endpoint
+          in: path
+          required: true
+          description: For type 'number' use E.164 compatible phone number.
+          schema:
+            type: string
+            nullable: true
+          x-position: 2
+        - name: method
+          in: path
+          required: true
+          schema:
+            type: string
+            nullable: true
+          x-position: 3
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationResponse"
+  "/verification/v1/verifications/reference/{reference}":
+    get:
+      tags:
+        - Query verifications
+      summary: Get verification by Reference
+      description: Queries the verification result by sending the verification Reference. With this query you can get the result of a verification.
+      operationId: VerificationStatusByReference
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema:
+            type: string
+            nullable: true
+          x-position: 1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationResponse"
+components:
+  schemas:
+    InitiateVerificationResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - method
+      properties:
+        id:
+          type: string
+          description: Verification identifier used to query for status.
+          minLength: 1
+        method:
+          $ref: "#/components/schemas/VerificationMethod"
+        sms:
+          description: Exists if 'sms' has been used.
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/SmsInitiateVerificationResponse"
+        flashCall:
+          description: Exists if 'flashcall' has been used.
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/FlashCallInitiateVerificationResponse"
+        callout:
+          description: Exists if 'callout' has been used.
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/CalloutInitiateVerificationResponse"
+        earlyReject:
+          type: boolean
+          description: Whether or not verification has been early rejected.
+          nullable: true
+        earlyRejectMessage:
+          type: string
+          description: In case verification has been early rejected a detailed reason.
+          nullable: true
+    VerificationMethod:
+      type: string
+      description: ""
+      x-enumNames:
+        - Sms
+        - FlashCall
+        - Callout
+      enum:
+        - Sms
+        - FlashCall
+        - Callout
+    SmsInitiateVerificationResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - template
+        - interceptionTimeout
+      properties:
+        template:
+          type: string
+          description: Regular expression pattern used to extract OPT code from SMS.
+          minLength: 1
+        interceptionTimeout:
+          type: integer
+          description: Amount of seconds that client should be waiting for the SMS.
+          format: int32
+    FlashCallInitiateVerificationResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - cliFilter
+        - interceptionTimeout
+      properties:
+        cliFilter:
+          type: string
+          description: Filter that should be applied for incoming calls to intercept the Flashcall.
+          minLength: 1
+        interceptionTimeout:
+          type: integer
+          description: Amount of seconds client should wait for the Flashcall.
+          format: int32
+    CalloutInitiateVerificationResponse:
+      type: object
+      additionalProperties: false
+    InitiateVerificationResource:
+      type: object
+      additionalProperties: false
+      required:
+        - identity
+        - method
+      properties:
+        identity:
+          description: Subject of verification process.
+          oneOf:
+            - $ref: "#/components/schemas/Identity"
+        method:
+          description: Verification strategy.
+          oneOf:
+            - $ref: "#/components/schemas/VerificationMethod"
+        reference:
+          type: string
+          description: Custom identifier used to get verification status.
+          maxLength: 4096
+          minLength: 0
+          nullable: true
+        custom:
+          type: string
+          description: Custom data passed back to callback.
+          maxLength: 4096
+          minLength: 0
+          nullable: true
+        honourEarlyReject:
+          type: boolean
+          description: Explicitly control if early rejects should be honoured.
+          nullable: true
+    Identity:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - endpoint
+      properties:
+        type:
+          type: string
+          description: Currently only 'number' type is supported.
+          minLength: 1
+        endpoint:
+          type: string
+          description: For type 'number' use E.164 compatible phone number.
+          minLength: 1
+    VerificationResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - method
+        - status
+      properties:
+        id:
+          type: string
+          description: Verification identifier used to query for status.
+          minLength: 1
+        method:
+          $ref: "#/components/schemas/VerificationMethod"
+        status:
+          type: string
+          description: "Either 'pending', 'successful' or 'failed'."
+          minLength: 1
+        reason:
+          type: string
+          description: In case of 'failed' verification exact reason of failure.
+          nullable: true
+        reference:
+          type: string
+          description: Custom Reference value if supplied during initiation.
+          nullable: true
+        source:
+          type: string
+          description: Custom Source value if supplied during initiation.
+          nullable: true
+    VerificationReportRequestResource:
+      type: object
+      additionalProperties: false
+      required:
+        - method
+      properties:
+        method:
+          $ref: "#/components/schemas/VerificationMethod"
+        source:
+          type: string
+          description: "Where OTP code has been retrieved from. E.g. 'manual', 'callLog', 'callInterceptor'."
+          nullable: true
+        code:
+          type: string
+          description: Might be used as method-agnostic OTP code.
+          nullable: true
+        sms:
+          description: Required if 'sms' verification.
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/SmsVerificationReportRequest"
+        flashcall:
+          description: Required if 'flashcall' verification.
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/FlashcallVerificationReportRequest"
+        callout:
+          description: Required if 'callout' verification.
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/CalloutVerificationReportRequest"
+    SmsVerificationReportRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: OTP code read from SMS.
+          minLength: 1
+    FlashcallVerificationReportRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - cli
+      properties:
+        cli:
+          type: string
+          description: Complete CLI received during Flashcall interception or read from call log.
+          minLength: 1
+    CalloutVerificationReportRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: OTP code.
+          minLength: 1
+x-explorer-enabled: false
+x-samples-languages:
+  - curl
+  - csharp
+  - java
+  - node
+  - php
+x-proxy-enabled: true
+x-samples-enabled: true
