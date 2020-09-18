@@ -72,13 +72,11 @@ docs:
     pages:
       - page: docs/sms/index.md
       - page: docs/sms/zapier.md
-  - group: Rest
+  - group: API reference
     pages:
       - page: docs/sms/sms-guide.md
       - page: docs/sms/helperlibraries/*
-      - group: API reference
-        pages:
-          - page: specs/sms.page.yaml/*
+      - page: specs/sms.page.yaml/*
   - page: docs/sms/sinch-campaing-user-guide.md
   - group: SMPP
     expanded: false
