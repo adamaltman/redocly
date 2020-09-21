@@ -1,10 +1,4 @@
 type: redoc
 definitionId: sms
 showInfo: true
-expand: false
-settings:
-  requiredPropsFirst: true
-  hideDownloadButton: false
-  layout:
-    scope: all
-    markdownItemsScope: all
+expand: true
