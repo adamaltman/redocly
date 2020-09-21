@@ -166,7 +166,8 @@ export const theme = {
   },
   rightPanel: {
     backgroundColor: "#263238",
-    width: "25%",
+    width: "50%",
+    minwidth: "400px",
     textColor: "lightgray",
     fontSize: "2em !important",
   },

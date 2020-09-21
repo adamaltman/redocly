@@ -40,7 +40,7 @@ export default function NavBar(props) {
           <NavItems>{navItems}</NavItems>
         </div>
         <div className="search-container">
-          <Flex flexWrap="nowrap">
+          <Flex flexWrap="nowrap" alignItems="center">
             {sbox}
             <Box ml="10px">
               <SinchButton href="https://sinch.com/signup">Sign up</SinchButton>

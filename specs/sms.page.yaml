@@ -2,3 +2,9 @@ type: redoc
 definitionId: sms
 showInfo: true
 expand: true
+settings:
+  requiredPropsFirst: true
+  hideDownloadButton: false
+  layout:
+    scope: all
+    markdownItemsScope: all

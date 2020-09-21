@@ -2,7 +2,7 @@ import * as React from "react";
 import styled from "styled-components";
 export const SinchButton = styled.a`
   display: inline-block;
-  padding: ${(a) => (a.small ? "0.8em" : "1em 1.5em")};
+  padding: ${(a) => (a.small ? "0.8em" : "0.8em 0.8em")};
   text-align: center;
   font-weight: ${(a) =>
     a.small
@@ -40,7 +40,7 @@ export const SinchButton = styled.a`
   background-color: ${({ theme: a }) => a.colors.primary.cta} !important;
   border: ${(a) => (a.small ? "1px" : "2px")} solid;
   border-color: transparent;
-  min-width: ${(a) => (a.large ? "248px" : "auto")};
+  min-width: ${(a) => (a.large ? "264px" : "180px")};
   @media only screen and (max-width: ${({ theme: a }) =>
       a.breakpoints.medium}) {
     min-width: auto;

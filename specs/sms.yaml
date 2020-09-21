@@ -87,6 +87,15 @@ paths:
           description: 'There was an error with your request. The body is a JSON object described in rest_http_errors. Possible error codes include syntax_invalid_json, syntax_invalid_parameter_format and syntax_constraint_violation.'
         '403':
           description: 'The system was not able to fulfill your request. The body is a JSON object described in rest_http_errors. Possible error codes include unknown_group, unknown_campaign and missing_callback_url.'
+      x-codeSamples: 
+        - lang: "java"
+          label: "java"
+          source: 
+            $ref: "../../../../../specs/samples/sendsms.java"
+        - lang: "c#"
+          label: "c#"
+          source: 
+            $ref: "../../../../../specs/samples/post.cs"
     get:
       summary: List Batches
       operationId: ListBatches
