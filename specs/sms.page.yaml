@@ -1,7 +1,7 @@
 type: redoc
 definitionId: sms
 showInfo: true
-expand: true
+expand: false
 settings:
   requiredPropsFirst: true
   hideDownloadButton: false
